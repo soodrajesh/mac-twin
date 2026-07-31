@@ -1,0 +1,20 @@
+# Build output
+DupeFinder.app/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+
+# Generated icon assets
+*.iconset/
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+
+# Temp
+*.tmp
+*.log
