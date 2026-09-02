@@ -93,13 +93,48 @@ echo "Icon:  AppIcon.icns rendered from SF Symbol"
 
 SOURCES=$(find Sources -name '*.swift')
 
-# SwiftUI @main requires -parse-as-library. Frameworks auto-link via `import`;
-# if linking ever fails, append: -framework SwiftUI -framework QuickLookThumbnailing -framework CryptoKit
-swiftc -O -parse-as-library \
-  -o "$APP/Contents/MacOS/$BIN" \
-  $SOURCES
+# --- Universal binary: build both slices, glue with lipo ---
+# A plain `swiftc` build only targets the host Mac's own architecture — fine
+# for local dev, but silently ships arm64-only to anyone running this on an
+# Intel Mac. Compiling each slice explicitly and combining them is what
+# `xcodebuild`'s ARCHS=$(ARCHS_STANDARD) does under the hood.
+MIN_OS="13.0"
+TMPBIN="$(mktemp -d)"
+for ARCH in arm64 x86_64; do
+  echo "Compiling $ARCH slice…"
+  swiftc -O -parse-as-library \
+    -target "$ARCH-apple-macos$MIN_OS" \
+    -o "$TMPBIN/DupeFinder-$ARCH" \
+    $SOURCES
+done
+lipo -create -output "$APP/Contents/MacOS/DupeFinder" "$TMPBIN/DupeFinder-arm64" "$TMPBIN/DupeFinder-x86_64"
+rm -rf "$TMPBIN"
 
-echo "Built $APP"
+echo "Built $APP ($(lipo -archs "$APP/Contents/MacOS/DupeFinder"))"
+
+# --- Sign: hardened runtime + entitlements, no App Sandbox ---
+# A real Developer ID Application identity is used when present. That's what
+# notarization requires (see notarize.sh), and it also keeps TCC permission
+# grants stable across rebuilds, since the grant then keys off a signing
+# identity that no longer changes on every build.
+#
+# Falls back to ad-hoc when no Developer ID is in the keychain, so a fresh
+# clone still builds and runs locally. An ad-hoc build is local-only:
+# Gatekeeper blocks it on every other Mac, and its TCC grants reset on each
+# rebuild because the CDHash is just a hash of the raw binary.
+IDENTITY=$( (security find-identity -v -p codesigning 2>/dev/null | grep '"Developer ID Application' | head -1 | sed -E 's/.*"(.+)"/\1/') || true)
+if [ -z "$IDENTITY" ]; then
+  echo "No Developer ID Application identity in keychain — signing ad-hoc."
+  echo "  This build is local-only: Gatekeeper will block it on any other Mac."
+  echo "  With Apple Developer enrollment active: Xcode > Settings > Accounts"
+  echo "  > Manage Certificates > + > Developer ID Application, then rebuild."
+  IDENTITY="-"
+fi
+# No --deep: Apple deprecated it, and it signs any nested code with the
+# *outer* entitlements. These bundles have no nested code to sign anyway.
+codesign --force --options runtime --entitlements "$(dirname "$0")/DupeFinder.entitlements" --sign "$IDENTITY" "$APP"
+echo "Signed with: $IDENTITY (hardened runtime on)"
+
 
 # --- Install to /Applications ---
 DEST="/Applications/$APP"

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	No App Sandbox. DupeFinder is distributed directly as a signed + notarized
+	DMG, not through the Mac App Store, and needs unrestricted access to the
+	user folders and system APIs it works against — none of which survive
+	sandboxing. That's a deliberate distribution choice, not an oversight.
+
+	Hardened Runtime is still fully applied at signing time: it's an
+	independent protection (blocks code injection, forces signed-only
+	executable code) that notarization requires and that doesn't need — or
+	grant — Sandbox's restrictions.
+
+	Every key below is explicitly false rather than omitted: these are the
+	hardened-runtime exemptions this app deliberately does NOT take. Spelling
+	them out means a future "just add an entitlement to make it work" change
+	has to consciously flip one, instead of silently appending to an empty
+	dict.
+	-->
+	<key>com.apple.security.cs.allow-jit</key>
+	<false/>
+	<key>com.apple.security.cs.disable-library-validation</key>
+	<false/>
+	<key>com.apple.security.cs.disable-executable-page-protection</key>
+	<false/>
+</dict>
+</plist>

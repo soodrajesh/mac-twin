@@ -1,5 +1,6 @@
 # Build output
 DupeFinder.app/
+*.dmg
 
 # macOS
 .DS_Store

@@ -50,7 +50,7 @@ struct StartView: View {
             }
             .frame(width: 320, alignment: .leading)
             .padding(20)
-            .background(.background.secondary, in: RoundedRectangle(cornerRadius: 10))
+            .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 10))
 
             VStack(alignment: .leading, spacing: 10) {
                 Toggle("All File Types", isOn: $allFileTypes)
@@ -64,7 +64,7 @@ struct StartView: View {
             }
             .frame(width: 320, alignment: .leading)
             .padding(20)
-            .background(.background.secondary, in: RoundedRectangle(cornerRadius: 10))
+            .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 10))
 
             Button {
                 model.startScan(roots: Array(checked), extensions: resolvedExtensions)
