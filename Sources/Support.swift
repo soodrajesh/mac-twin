@@ -27,11 +27,11 @@ extension EnvironmentValues {
     }
 }
 
-/// License status: whether the user has a valid DupeFinder Pro license.
+/// License status: whether the user has a valid MacTwin Pro license.
 /// Free tier (full scan + review + manual trash — the core safety-first
 /// loop) has no expiry and no trial; Pro gates scheduled scans, report
 /// export, smart auto-select, and unlimited custom-folder scan scope. See
-/// `DupeFinderLicenseCheck.swift`.
+/// `MacTwinLicenseCheck.swift`.
 private struct IsProLicensedKey: EnvironmentKey {
     static let defaultValue: Bool = false
 }

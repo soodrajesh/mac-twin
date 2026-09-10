@@ -2,15 +2,15 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-# Packages the already-built, signed + notarized DupeFinder.app into a
+# Packages the already-built, signed + notarized MacTwin.app into a
 # distributable DMG. Deliberately separate from build.sh/notarize.sh: this is
 # the final packaging step, run only when cutting a real release, after
 # notarize.sh has already stapled the ticket.
 
-APP="DupeFinder.app"
+APP="MacTwin.app"
 VERSION=$(defaults read "$(pwd)/$APP/Contents/Info" CFBundleShortVersionString)
-DMG="DupeFinder-$VERSION.dmg"
-VOLNAME="DupeFinder"
+DMG="MacTwin-$VERSION.dmg"
+VOLNAME="MacTwin"
 KEYCHAIN_PROFILE="${NOTARY_PROFILE:-MacGroom-Notary}"
 
 if [ ! -d "$APP" ]; then
@@ -43,7 +43,7 @@ ln -s /Applications "$STAGING/Applications"
 # mount it, set the icon, unmount, then convert to the real compressed DMG.
 cp "$APP/Contents/Resources/AppIcon.icns" "$STAGING/.VolumeIcon.icns"
 
-RWDMG="$(mktemp -u /tmp/DupeFinder-rw-XXXX).dmg"
+RWDMG="$(mktemp -u /tmp/MacTwin-rw-XXXX).dmg"
 hdiutil create -volname "$VOLNAME" -srcfolder "$STAGING" -ov -format UDRW "$RWDMG" -quiet
 MOUNT_DIR="$(mktemp -d)"
 hdiutil attach "$RWDMG" -mountpoint "$MOUNT_DIR" -nobrowse -quiet

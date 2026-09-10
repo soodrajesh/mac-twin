@@ -2,15 +2,15 @@ import Foundation
 import CryptoKit
 import Security
 
-/// Configuration for DupeFinder Pro's Polar.sh product.
+/// Configuration for MacTwin Pro's Polar.sh product.
 ///
-/// DupeFinder Pro is a SEPARATE product from MacGroom Pro — per-app
+/// MacTwin Pro is a SEPARATE product from MacGroom Pro — per-app
 /// licensing, not a bundle — so it needs its own Polar organization (or at
 /// minimum its own product within one), independent of MacGroom's.
 ///
 /// TODO(polar-setup): none of this exists yet. Before shipping Pro gating
 /// for real:
-///   1. Create a "DupeFinder Pro" product in Polar.sh (either a new
+///   1. Create a "MacTwin Pro" product in Polar.sh (either a new
 ///      organization, or a new product inside the existing gogenops
 ///      organization — decide deliberately, see the warning below).
 ///   2. Enable that product's License Keys benefit.
@@ -18,7 +18,7 @@ import Security
 ///      below as `organizationId` (replacing the placeholder).
 ///   4. Point "Unlock Pro" buttons at that product's real checkout URL —
 ///      `purchaseURL` below is a placeholder.
-///   5. Optionally set env var DUPEFINDER_POLAR_ORG_ID to override
+///   5. Optionally set env var MACTWIN_POLAR_ORG_ID to override
 ///      `organizationId` at build/run time (useful for testing against a
 ///      sandbox org before the real one is public).
 ///
@@ -26,22 +26,22 @@ import Security
 /// organization ID here: Polar's `/v1/customer-portal/license-keys/validate`
 /// endpoint validates a key against an *organization*, not a specific
 /// product within it — the response this app decodes (see `License`)
-/// carries no product/benefit identifier to cross-check. If DupeFinder Pro
+/// carries no product/benefit identifier to cross-check. If MacTwin Pro
 /// is created as a second product inside MacGroom's existing gogenops
 /// organization, a valid MacGroom Pro license key would also validate here
-/// and unlock DupeFinder Pro, and vice versa. That may be an acceptable,
+/// and unlock MacTwin Pro, and vice versa. That may be an acceptable,
 /// deliberate choice (an implicit "gogenops Pro bundle") — but it must be
 /// a decision made when filling in step 1 above, not a silent accident.
 /// The placeholder organization ID below is intentionally invalid so Pro
 /// stays locked (fails closed) until someone makes that call.
 enum PolarConfig {
-    /// Polar's organization ID for DupeFinder Pro's Polar org. Placeholder
+    /// Polar's organization ID for MacTwin Pro's Polar org. Placeholder
     /// until the TODO above is done — a request with this value 404s from
     /// Polar, so every license check fails closed rather than silently
     /// trusting an unrelated org.
     static var organizationId: String {
-        ProcessInfo.processInfo.environment["DUPEFINDER_POLAR_ORG_ID"]
-            ?? "TODO-REPLACE-WITH-DUPEFINDER-POLAR-ORGANIZATION-ID"
+        ProcessInfo.processInfo.environment["MACTWIN_POLAR_ORG_ID"]
+            ?? "TODO-REPLACE-WITH-MACTWIN-POLAR-ORGANIZATION-ID"
     }
 
     /// True once `organizationId` has been replaced with a real Polar org
@@ -56,12 +56,12 @@ enum PolarConfig {
 
     /// Where "Unlock Pro" buttons should send the user. TODO: replace with
     /// the real Polar checkout URL once the product exists.
-    static let purchaseURL = URL(string: "https://gogenops.com/mac-apps/dupefinder/#pro")!
+    static let purchaseURL = URL(string: "https://gogenops.com/mac-apps/mactwin/#pro")!
 
     /// `@AppStorage` key for the stored license key — scoped to this app's
     /// own bundle id, distinct from MacGroom's
     /// `com.macgroom.disksweeper.licenseKey`.
-    static let storedKeyDefaultsKey = "com.rajeshsood.dupefinder.licenseKey"
+    static let storedKeyDefaultsKey = "com.rajeshsood.mactwin.licenseKey"
 }
 
 /// Local, tamper-evident cache for verified license state. Same design as
@@ -77,10 +77,10 @@ enum PolarConfig {
 /// it doesn't eliminate offline bypass entirely, which no purely
 /// client-side check can.
 private enum SecureLicenseCache {
-    private static let licenseService = "com.rajeshsood.dupefinder.license.cache.v1"
+    private static let licenseService = "com.rajeshsood.mactwin.license.cache.v1"
 
     /// Byte-masked so the secret doesn't sit in the binary's strings table
-    /// as plain readable text. This is DupeFinder's own key, distinct from
+    /// as plain readable text. This is MacTwin's own key, distinct from
     /// MacGroom's — do not reuse MacGroom's masked bytes here.
     private static var hmacKey: SymmetricKey {
         let masked: [UInt8] = [
@@ -253,9 +253,9 @@ public enum LicenseCheckError: LocalizedError {
         case .unknown(let message):
             return message
         case .wrongProduct:
-            return "This license key isn't valid for DupeFinder."
+            return "This license key isn't valid for MacTwin."
         case .notYetAvailable:
-            return "DupeFinder Pro isn't available for purchase yet. Please check back soon."
+            return "MacTwin Pro isn't available for purchase yet. Please check back soon."
         }
     }
 }
@@ -295,7 +295,7 @@ public struct License: Codable, Equatable {
 /// customer-portal License Keys API
 /// (`POST /v1/customer-portal/license-keys/validate`), which needs no
 /// `Authorization` header — see that file's doc comment for the confirmed
-/// request/response shape. `organizationId` here is DupeFinder's own (see
+/// request/response shape. `organizationId` here is MacTwin's own (see
 /// `PolarConfig`), not MacGroom's.
 public class LicenseChecker {
     private let urlSession: URLSession

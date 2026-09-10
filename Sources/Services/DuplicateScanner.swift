@@ -29,7 +29,7 @@ enum DuplicateScanner {
         var hashedCount = 0
         records.reserveCapacity(toHash.count)
 
-        let queue = DispatchQueue(label: "dupefinder.hash", attributes: .concurrent)
+        let queue = DispatchQueue(label: "mactwin.hash", attributes: .concurrent)
         let group = DispatchGroup()
         let sem = DispatchSemaphore(value: max(1, ProcessInfo.processInfo.activeProcessorCount))
 

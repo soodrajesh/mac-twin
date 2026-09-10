@@ -1,8 +1,8 @@
 import SwiftUI
 
 /// Template: MacGroom's `LicenseManagementView.swift`. Same visual card
-/// pattern and verification flow, scoped to DupeFinder's own license key
-/// and `LicenseChecker` (`DupeFinderLicenseCheck.swift`).
+/// pattern and verification flow, scoped to MacTwin's own license key
+/// and `LicenseChecker` (`MacTwinLicenseCheck.swift`).
 struct LicenseManagementView: View {
     @AppStorage(PolarConfig.storedKeyDefaultsKey) private var storedLicenseKey = ""
 
@@ -29,7 +29,7 @@ struct LicenseManagementView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("DupeFinder Pro")
+                    Text("MacTwin Pro")
                         .appFont(.headline)
                     Text(isVerifying ? "Verifying…" : (isLicenseActive ? "License Active" : "Free Version"))
                         .appFont(.caption, weight: .regular)
@@ -71,7 +71,7 @@ struct LicenseManagementView: View {
                 }
 
                 if storedLicenseKey.isEmpty {
-                    Button("Buy DupeFinder Pro") {
+                    Button("Buy MacTwin Pro") {
                         NSWorkspace.shared.open(PolarConfig.purchaseURL)
                     }
                     .buttonStyle(.link)
@@ -109,7 +109,7 @@ struct LicenseManagementView: View {
         do {
             let license = try await checker.verify(licenseKey: key)
             isLicenseActive = license.isValid
-            verificationMessage = "License verified — DupeFinder Pro unlocked."
+            verificationMessage = "License verified — MacTwin Pro unlocked."
             verificationError = false
         } catch {
             isLicenseActive = false

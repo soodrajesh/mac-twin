@@ -12,6 +12,6 @@ swiftc -O \
   Sources/FileCategory.swift \
   Sources/Services/HashService.swift \
   Sources/Services/DuplicateScanner.swift \
-  -o /tmp/dupefinder-tests
+  -o /tmp/mactwin-tests
 
-/tmp/dupefinder-tests
+/tmp/mactwin-tests

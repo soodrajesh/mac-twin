@@ -108,7 +108,7 @@ struct ResultsView: View {
 
     private func exportReport() {
         let panel = NSSavePanel()
-        panel.nameFieldStringValue = "DupeFinder-Report.csv"
+        panel.nameFieldStringValue = "MacTwin-Report.csv"
         panel.allowedContentTypes = [.commaSeparatedText]
         guard panel.runModal() == .OK, let url = panel.url else { return }
         do {

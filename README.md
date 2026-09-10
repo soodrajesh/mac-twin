@@ -1,13 +1,13 @@
-# DupeFinder
+# MacTwin
 
 A native macOS duplicate-file finder. Pure Swift + SwiftUI, no Xcode, zero
 third-party dependencies. Offline and private — every scan and hash happens
 locally; nothing leaves your Mac.
 
-DupeFinder's companion app [DiskSweeper](https://github.com/soodrajesh/mac-cleanup)
-(ships as MacGroom) reclaims space from caches and junk; DupeFinder reclaims
+MacTwin's companion app [DiskSweeper](https://github.com/soodrajesh/mac-cleanup)
+(ships as MacGroom) reclaims space from caches and junk; MacTwin reclaims
 space differently — same-content files you genuinely meant to keep, just
-more than once. DupeFinder's UI follows the same MacGroom-level design
+more than once. MacTwin's UI follows the same MacGroom-level design
 system as its siblings (semantic colors, a scalable Text Size setting,
 native toolbar chrome) — see `Sources/Support.swift` and
 `Sources/Views/SettingsView.swift`.
@@ -26,21 +26,21 @@ deciding what to delete or actually deleting it is ever gated.
 | Export scan report (CSV) | — | ✅ |
 | Scheduled background scans | — | ✅ |
 
-### DupeFinder Pro
+### MacTwin Pro
 
 Pro is a one-time license key, verified against
 [Polar.sh](https://polar.sh) — the same verification flow and Keychain-backed,
 tamper-evident local cache as MacGroom's own Pro licensing
-(`Sources/DupeFinderLicenseCheck.swift`, template:
+(`Sources/MacTwinLicenseCheck.swift`, template:
 `mac-cleanup/Sources/MacGroomLicenseCheck.swift`), but its own **separate**
-Polar product — DupeFinder Pro is not part of the MacGroom bundle.
+Polar product — MacTwin Pro is not part of the MacGroom bundle.
 
 Enter your license key from Settings → License (⌘,). Every Pro-gated
 control shows an inline "Unlock Pro" prompt when unlicensed rather than
 silently disabling — see `Sources/Views/ProGate.swift`.
 
 **Setup TODO before this is live**: `PolarConfig` in
-`Sources/DupeFinderLicenseCheck.swift` carries a placeholder organization ID
+`Sources/MacTwinLicenseCheck.swift` carries a placeholder organization ID
 and purchase URL with the full checklist of what needs creating in the
 Polar dashboard.
 
@@ -60,14 +60,14 @@ Polar dashboard.
 Requires the Xcode Command Line Tools (`xcode-select --install`).
 
 ```bash
-git clone https://github.com/soodrajesh/mac-dupes.git
-cd mac-dupes
+git clone https://github.com/soodrajesh/mac-twin.git
+cd mac-twin
 ./build.sh
-open /Applications/DupeFinder.app
+open /Applications/MacTwin.app
 ```
 
 `build.sh` compiles the sources, renders the app icon from an SF Symbol,
-bundles `DupeFinder.app`, and installs it to `/Applications`.
+bundles `MacTwin.app`, and installs it to `/Applications`.
 
 ## How it works
 

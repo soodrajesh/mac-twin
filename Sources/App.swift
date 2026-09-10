@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct DupeFinderApp: App {
+struct MacTwinApp: App {
     @StateObject private var model = DupeModel()
 
     @AppStorage("appearanceMode") private var appearanceMode = AppearanceMode.system

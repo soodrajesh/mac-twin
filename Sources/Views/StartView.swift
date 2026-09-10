@@ -31,7 +31,7 @@ struct StartView: View {
                 Image(systemName: "doc.on.doc")
                     .font(.system(size: 44))
                     .foregroundStyle(.secondary)
-                Text("DupeFinder")
+                Text("MacTwin")
                     .appFont(.title2, weight: .bold)
                 Text("Finds files with identical content, so you can trash the extra copies. Nothing is scanned outside the folders you pick.")
                     .appFont(.callout)
@@ -183,7 +183,7 @@ struct StartView: View {
             if candidate == existing
                 || candidate.hasPrefix(existing + "/")
                 || existing.hasPrefix(candidate + "/") {
-                return "“\(url.abbreviatedPath)” overlaps with the already-selected “\(root.abbreviatedPath)”. DupeFinder automatically avoids counting the same file twice, but scanning both is redundant — consider selecting only the top-level folder."
+                return "“\(url.abbreviatedPath)” overlaps with the already-selected “\(root.abbreviatedPath)”. MacTwin automatically avoids counting the same file twice, but scanning both is redundant — consider selecting only the top-level folder."
             }
         }
         return nil

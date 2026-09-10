@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Small reusable "this needs DupeFinder Pro" upsell pieces — gated
+/// Small reusable "this needs MacTwin Pro" upsell pieces — gated
 /// features show these instead of silently disabling, per the design
 /// system's Pro-gating pattern. Tapping opens Settings (⌘,) where License
 /// lives, rather than just disabling the control with no explanation.

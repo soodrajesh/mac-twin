@@ -103,7 +103,7 @@ do {
 // subfolders — is never grouped as a "duplicate" of itself.)
 
 do {
-    let tmp = FileManager.default.temporaryDirectory.appendingPathComponent("dupefinder-tests-\(UUID().uuidString)")
+    let tmp = FileManager.default.temporaryDirectory.appendingPathComponent("mactwin-tests-\(UUID().uuidString)")
     let subdir = tmp.appendingPathComponent("subdir")
     try! FileManager.default.createDirectory(at: subdir, withIntermediateDirectories: true)
     defer { try? FileManager.default.removeItem(at: tmp) }
@@ -124,7 +124,7 @@ do {
 // MARK: - Overlapping roots still correctly find *real* duplicates
 
 do {
-    let tmp = FileManager.default.temporaryDirectory.appendingPathComponent("dupefinder-tests-\(UUID().uuidString)")
+    let tmp = FileManager.default.temporaryDirectory.appendingPathComponent("mactwin-tests-\(UUID().uuidString)")
     let subdir = tmp.appendingPathComponent("subdir")
     try! FileManager.default.createDirectory(at: subdir, withIntermediateDirectories: true)
     defer { try? FileManager.default.removeItem(at: tmp) }

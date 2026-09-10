@@ -155,7 +155,7 @@ private struct ScanningTab: View {
                         .appFont(.headline)
                     ProBadge()
                 }
-                Text("Automatically re-scan your last-used folders in the background, on a repeating schedule, while DupeFinder is running.")
+                Text("Automatically re-scan your last-used folders in the background, on a repeating schedule, while MacTwin is running.")
                     .appFont(.callout)
                     .foregroundStyle(.secondary)
 
@@ -188,7 +188,7 @@ private struct LicenseTab: View {
             LicenseManagementView()
 
             VStack(alignment: .leading, spacing: 6) {
-                Text("DupeFinder Pro unlocks:").appFont(.subheadline, weight: .semibold)
+                Text("MacTwin Pro unlocks:").appFont(.subheadline, weight: .semibold)
                 ForEach([
                     "Scheduled background scans",
                     "Export scan reports (CSV)",
@@ -210,14 +210,14 @@ private struct AboutTab: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
-            Text("DupeFinder \(currentVersion)")
+            Text("MacTwin \(currentVersion)")
                 .appFont(.headline)
             Text("A native macOS duplicate-file finder. Offline and private — every scan and hash happens locally.")
                 .appFont(.callout)
                 .foregroundStyle(.secondary)
 
             Button("Report a Bug or Request a Feature…") {
-                NSWorkspace.shared.open(URL(string: "https://github.com/soodrajesh/mac-dupes/issues/new/choose")!)
+                NSWorkspace.shared.open(URL(string: "https://github.com/soodrajesh/mac-twin/issues/new/choose")!)
             }
             .buttonStyle(.link)
             .appFont(.callout)

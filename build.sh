@@ -2,8 +2,8 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-APP="DupeFinder.app"
-BIN="DupeFinder"
+APP="MacTwin.app"
+BIN="MacTwin"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 
 cat > "$APP/Contents/Info.plist" <<'PLIST'
@@ -12,21 +12,21 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 <plist version="1.0">
 <dict>
 	<key>CFBundleExecutable</key>
-	<string>DupeFinder</string>
+	<string>MacTwin</string>
 	<key>CFBundleIconFile</key>
 	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.rajeshsood.dupefinder</string>
+	<string>com.rajeshsood.mactwin</string>
 	<key>CFBundleName</key>
-	<string>DupeFinder</string>
+	<string>MacTwin</string>
 	<key>CFBundleDisplayName</key>
-	<string>DupeFinder</string>
+	<string>MacTwin</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.2</string>
 	<key>CFBundleVersion</key>
-	<string>3</string>
+	<string>4</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>13.0</string>
 	<key>LSUIElement</key>
@@ -104,13 +104,13 @@ for ARCH in arm64 x86_64; do
   echo "Compiling $ARCH slice…"
   swiftc -O -parse-as-library \
     -target "$ARCH-apple-macos$MIN_OS" \
-    -o "$TMPBIN/DupeFinder-$ARCH" \
+    -o "$TMPBIN/MacTwin-$ARCH" \
     $SOURCES
 done
-lipo -create -output "$APP/Contents/MacOS/DupeFinder" "$TMPBIN/DupeFinder-arm64" "$TMPBIN/DupeFinder-x86_64"
+lipo -create -output "$APP/Contents/MacOS/MacTwin" "$TMPBIN/MacTwin-arm64" "$TMPBIN/MacTwin-x86_64"
 rm -rf "$TMPBIN"
 
-echo "Built $APP ($(lipo -archs "$APP/Contents/MacOS/DupeFinder"))"
+echo "Built $APP ($(lipo -archs "$APP/Contents/MacOS/MacTwin"))"
 
 # --- Sign: hardened runtime + entitlements, no App Sandbox ---
 # A real Developer ID Application identity is used when present. That's what
@@ -132,7 +132,7 @@ if [ -z "$IDENTITY" ]; then
 fi
 # No --deep: Apple deprecated it, and it signs any nested code with the
 # *outer* entitlements. These bundles have no nested code to sign anyway.
-codesign --force --options runtime --entitlements "$(dirname "$0")/DupeFinder.entitlements" --sign "$IDENTITY" "$APP"
+codesign --force --options runtime --entitlements "$(dirname "$0")/MacTwin.entitlements" --sign "$IDENTITY" "$APP"
 echo "Signed with: $IDENTITY (hardened runtime on)"
 
 

@@ -226,7 +226,7 @@ final class DupeModel: ObservableObject {
         scheduledActivity = nil
         guard enabled, !lastScanRoots.isEmpty else { return }
 
-        let activity = NSBackgroundActivityScheduler(identifier: "com.rajeshsood.dupefinder.scheduledscan")
+        let activity = NSBackgroundActivityScheduler(identifier: "com.rajeshsood.mactwin.scheduledscan")
         activity.repeats = true
         activity.interval = TimeInterval(max(1, intervalHours) * 3600)
         activity.tolerance = activity.interval * 0.1
