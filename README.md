@@ -5,8 +5,44 @@ third-party dependencies. Offline and private — every scan and hash happens
 locally; nothing leaves your Mac.
 
 DupeFinder's companion app [DiskSweeper](https://github.com/soodrajesh/mac-cleanup)
-reclaims space from caches and junk; DupeFinder reclaims space differently —
-same-content files you genuinely meant to keep, just more than once.
+(ships as MacGroom) reclaims space from caches and junk; DupeFinder reclaims
+space differently — same-content files you genuinely meant to keep, just
+more than once. DupeFinder's UI follows the same MacGroom-level design
+system as its siblings (semantic colors, a scalable Text Size setting,
+native toolbar chrome) — see `Sources/Support.swift` and
+`Sources/Views/SettingsView.swift`.
+
+## Free vs. Pro
+
+The core safety-first loop — full scan, review, and manual Trash — is
+**free, unlimited, forever**. That's the trust story: nothing about
+deciding what to delete or actually deleting it is ever gated.
+
+| | Free | Pro |
+|---|---|---|
+| Scan, review, manual Trash | ✅ | ✅ |
+| Scan scope | Downloads, Pictures, Desktop, Documents, Movies | + any custom folder, unlimited |
+| Auto-select strategy | Keep Oldest (default) | + Keep Newest, Keep Shortest Path |
+| Export scan report (CSV) | — | ✅ |
+| Scheduled background scans | — | ✅ |
+
+### DupeFinder Pro
+
+Pro is a one-time license key, verified against
+[Polar.sh](https://polar.sh) — the same verification flow and Keychain-backed,
+tamper-evident local cache as MacGroom's own Pro licensing
+(`Sources/DupeFinderLicenseCheck.swift`, template:
+`mac-cleanup/Sources/MacGroomLicenseCheck.swift`), but its own **separate**
+Polar product — DupeFinder Pro is not part of the MacGroom bundle.
+
+Enter your license key from Settings → License (⌘,). Every Pro-gated
+control shows an inline "Unlock Pro" prompt when unlicensed rather than
+silently disabling — see `Sources/Views/ProGate.swift`.
+
+**Setup TODO before this is live**: `PolarConfig` in
+`Sources/DupeFinderLicenseCheck.swift` carries a placeholder organization ID
+and purchase URL with the full checklist of what needs creating in the
+Polar dashboard.
 
 ## Safety model
 

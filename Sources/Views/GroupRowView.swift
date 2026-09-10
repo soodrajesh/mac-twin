@@ -9,10 +9,10 @@ struct GroupRowView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text("\(group.items.count) copies · \(group.size.humanBytes) each")
-                    .font(.subheadline.bold())
+                    .appFont(.subheadline, weight: .bold)
                 Spacer()
                 Text("wastes \(group.wastedBytes.humanBytes)")
-                    .font(.subheadline)
+                    .appFont(.subheadline)
                     .foregroundStyle(.secondary)
             }
 
@@ -26,7 +26,7 @@ struct GroupRowView: View {
             }
         }
         .padding(12)
-        .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 10))
+        .background(Color(.controlBackgroundColor), in: RoundedRectangle(cornerRadius: 10))
     }
 }
 
@@ -59,16 +59,16 @@ private struct ItemCard: View {
 
             if isKeeperSuggestion {
                 Text("Suggested keep")
-                    .font(.caption2.bold())
+                    .appFont(.caption2, weight: .bold)
                     .foregroundStyle(.green)
             }
 
             Text(item.url.lastPathComponent)
-                .font(.caption)
+                .appFont(.caption)
                 .lineLimit(1)
                 .truncationMode(.middle)
             Text(item.url.deletingLastPathComponent().abbreviatedPath)
-                .font(.caption2)
+                .appFont(.caption2)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .truncationMode(.head)

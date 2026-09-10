@@ -3,6 +3,7 @@ import AppKit
 
 struct StartView: View {
     @EnvironmentObject var model: DupeModel
+    @Environment(\.isProLicensed) private var isProLicensed
 
     private let commonFolders: [(name: String, url: URL)] = {
         let home = FileManager.default.homeDirectoryForCurrentUser
@@ -30,9 +31,9 @@ struct StartView: View {
                     .font(.system(size: 44))
                     .foregroundStyle(.secondary)
                 Text("DupeFinder")
-                    .font(.title2.bold())
+                    .appFont(.title2, weight: .bold)
                 Text("Finds files with identical content, so you can trash the extra copies. Nothing is scanned outside the folders you pick.")
-                    .font(.callout)
+                    .appFont(.callout)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 420)
@@ -41,35 +42,55 @@ struct StartView: View {
             VStack(alignment: .leading, spacing: 10) {
                 ForEach(commonFolders, id: \.url) { folder in
                     Toggle(folder.name, isOn: binding(for: folder.url))
+                        .appFont(.body)
                 }
                 ForEach(customFolders, id: \.self) { url in
                     Toggle(url.abbreviatedPath, isOn: binding(for: url))
+                        .appFont(.body)
                 }
-                Button("Choose Folder…") { chooseFolder() }
+
+                if isProLicensed {
+                    Button("Choose Folder…") { chooseFolder() }
+                        .appFont(.body)
+                        .padding(.top, 4)
+                } else {
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack(spacing: 6) {
+                            UnlockProButton(label: "Unlock Pro to Add Any Folder")
+                        }
+                        Text("Free version scans the 5 folders above only.")
+                            .appFont(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                     .padding(.top, 4)
+                }
             }
             .frame(width: 320, alignment: .leading)
             .padding(20)
-            .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 10))
+            .background(Color(.controlBackgroundColor), in: RoundedRectangle(cornerRadius: 10))
 
             VStack(alignment: .leading, spacing: 10) {
                 Toggle("All File Types", isOn: $allFileTypes)
+                    .appFont(.body)
                 if !allFileTypes {
                     ForEach(FileCategory.allCases) { category in
                         Toggle(category.rawValue, isOn: binding(for: category))
+                            .appFont(.body)
                     }
                     TextField("Custom extensions, comma-separated (e.g. psd, sketch)", text: $customExtensions)
                         .textFieldStyle(.roundedBorder)
+                        .appFont(.body)
                 }
             }
             .frame(width: 320, alignment: .leading)
             .padding(20)
-            .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 10))
+            .background(Color(.controlBackgroundColor), in: RoundedRectangle(cornerRadius: 10))
 
             Button {
                 model.startScan(roots: Array(checked), extensions: resolvedExtensions)
             } label: {
                 Text("Scan for Duplicates")
+                    .appFont(.body)
                     .frame(maxWidth: 200)
             }
             .buttonStyle(.borderedProminent)

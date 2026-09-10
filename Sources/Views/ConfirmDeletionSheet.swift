@@ -9,23 +9,26 @@ struct ConfirmDeletionSheet: View {
             if let progress = model.deletionProgress {
                 ProgressView(value: Double(progress.done), total: Double(progress.total))
                 Text("Moving \(progress.done) / \(progress.total) to Trash…")
+                    .appFont(.body)
                     .foregroundStyle(.secondary)
             } else {
                 Image(systemName: "trash")
                     .font(.system(size: 32))
                     .foregroundStyle(.secondary)
                 Text("Move \(model.selectedForTrash.count) files to Trash?")
-                    .font(.headline)
+                    .appFont(.headline)
                 Text("\(model.selectedBytes.humanBytes) will be reclaimed. Files go to Trash, recoverable until you empty it.")
-                    .font(.callout)
+                    .appFont(.callout)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
 
                 HStack {
                     Button("Cancel") { isPresented = false }
+                        .appFont(.body)
                     Button("Move to Trash") {
                         model.moveSelectedToTrash { isPresented = false }
                     }
+                    .appFont(.body)
                     .buttonStyle(.borderedProminent)
                     .tint(.red)
                 }
