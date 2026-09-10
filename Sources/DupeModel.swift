@@ -79,15 +79,19 @@ final class DupeModel: ObservableObject {
         Task.detached { [weak self] in
             guard let self else { return }
             var failures: [String] = []
+            var trashed: [URL] = []
             TrashService.moveToTrash(urls, isCancelled: { false }) { i, outcome in
-                if !outcome.success, let error = outcome.error {
+                if outcome.success {
+                    trashed.append(outcome.url)
+                } else if let error = outcome.error {
                     failures.append("\(outcome.url.lastPathComponent): \(error)")
                 }
                 Task { @MainActor in self.deletionProgress = (i + 1, urls.count) }
             }
             let failureMessage = failures.isEmpty ? nil : failures.joined(separator: "\n")
+            let succeeded = trashed
             await MainActor.run {
-                self.removeTrashed(urls)
+                self.removeTrashed(succeeded)
                 self.isDeleting = false
                 self.deletionProgress = nil
                 self.lastError = failureMessage
