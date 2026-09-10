@@ -46,6 +46,24 @@ final class DupeModel: ObservableObject {
         }
     }
 
+    /// Groups where the current selection would trash *every* copy,
+    /// including the suggested keeper — i.e. zero survivors. Surfaced as a
+    /// hard-stop warning in `ConfirmDeletionSheet` before the destructive
+    /// action is allowed to proceed, since selection is a flat `Set<URL>`
+    /// with no per-group "keep at least one" bookkeeping elsewhere.
+    var groupsWithNoSurvivors: [DuplicateGroup] {
+        groups.filter { group in
+            group.items.allSatisfy { selectedForTrash.contains($0.url) }
+        }
+    }
+
+    /// True whenever the user has completed results on screen to review —
+    /// used to defer a Pro scheduled scan rather than silently discarding
+    /// an in-progress manual review (see `configureScheduledScans`).
+    var isReviewingResults: Bool {
+        hasScanned && !groups.isEmpty
+    }
+
     func startScan(roots: [URL], extensions: Set<String>? = nil) {
         scanTask?.cancel()
         lastScanRoots = roots
@@ -216,7 +234,13 @@ final class DupeModel: ObservableObject {
         activity.schedule { [weak self] completion in
             guard let self else { completion(.finished); return }
             Task { @MainActor in
-                guard !self.isScanning else { completion(.finished); return }
+                // Don't clobber an active review session: a scan already
+                // running, or unreviewed results still on screen (the user
+                // may have hand-adjusted selections that `startScan` would
+                // silently discard). Defer rather than run — the next
+                // scheduled tick, or the user's next manual scan, will
+                // catch up once they've moved past ResultsView.
+                guard !self.isScanning, !self.isReviewingResults else { completion(.finished); return }
                 self.startScan(roots: self.lastScanRoots, extensions: self.lastScanExtensions)
                 completion(.finished)
             }

@@ -10,6 +10,8 @@ swiftc -O \
   Sources/Models.swift \
   Sources/DuplicateGrouping.swift \
   Sources/FileCategory.swift \
+  Sources/Services/HashService.swift \
+  Sources/Services/DuplicateScanner.swift \
   -o /tmp/dupefinder-tests
 
 /tmp/dupefinder-tests

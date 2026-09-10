@@ -21,6 +21,7 @@ struct StartView: View {
     @State private var allFileTypes = true
     @State private var selectedCategories: Set<FileCategory> = []
     @State private var customExtensions = ""
+    @State private var overlapWarning: String?
 
     var body: some View {
         VStack(spacing: 20) {
@@ -97,9 +98,24 @@ struct StartView: View {
             .controlSize(.large)
             .disabled(checked.isEmpty || (resolvedExtensions?.isEmpty ?? false))
 
+            if checked.isEmpty {
+                Text("Select at least one folder to scan.")
+                    .appFont(.caption)
+                    .foregroundStyle(.secondary)
+            } else if resolvedExtensions?.isEmpty ?? false {
+                Text("Select at least one file type, or turn on “All File Types.”")
+                    .appFont(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
             Spacer()
         }
         .padding()
+        .alert("Overlapping Folder", isPresented: Binding(get: { overlapWarning != nil }, set: { if !$0 { overlapWarning = nil } })) {
+            Button("OK", role: .cancel) { overlapWarning = nil }
+        } message: {
+            Text(overlapWarning ?? "")
+        }
     }
 
     private func binding(for url: URL) -> Binding<Bool> {
@@ -140,7 +156,36 @@ struct StartView: View {
         panel.canChooseDirectories = true
         panel.allowsMultipleSelection = false
         guard panel.runModal() == .OK, let url = panel.url else { return }
+
+        // Early, UI-level warning for the common case (a user visibly picks
+        // a folder that is a parent or child of one already checked). This
+        // is a courtesy — not the safety guarantee — since it can be
+        // bypassed by symlinks or by checking two folders independently
+        // without ever triggering this picker path again; the real
+        // guarantee is `DuplicateScanner.enumerate`'s canonical-path dedup,
+        // which applies regardless of what happens here.
+        if let overlap = firstOverlap(of: url, in: checked) {
+            overlapWarning = overlap
+        }
+
         if !customFolders.contains(url) { customFolders.append(url) }
         checked.insert(url)
+    }
+
+    /// Returns a human-readable warning if `url` is the same as, contains,
+    /// or is contained by any folder already in `roots` — nil if there's no
+    /// overlap.
+    private func firstOverlap(of url: URL, in roots: Set<URL>) -> String? {
+        let candidate = url.resolvingSymlinksInPath().standardizedFileURL.path
+        for root in roots {
+            let existing = root.resolvingSymlinksInPath().standardizedFileURL.path
+            guard existing != candidate else { continue } // re-checking the same folder isn't an overlap concern here
+            if candidate == existing
+                || candidate.hasPrefix(existing + "/")
+                || existing.hasPrefix(candidate + "/") {
+                return "“\(url.abbreviatedPath)” overlaps with the already-selected “\(root.abbreviatedPath)”. DupeFinder automatically avoids counting the same file twice, but scanning both is redundant — consider selecting only the top-level folder."
+            }
+        }
+        return nil
     }
 }

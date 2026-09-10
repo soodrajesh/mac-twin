@@ -16,7 +16,8 @@ enum DuplicateScanner {
                       extensions: Set<String>? = nil,
                       isCancelled: @escaping () -> Bool,
                       onProgress: @escaping @Sendable (Progress) -> Void) -> [DuplicateGroup] {
-        let candidates = enumerate(roots: roots, extensions: extensions)
+        let candidates = enumerate(roots: roots, extensions: extensions, isCancelled: isCancelled, onProgress: onProgress)
+        if isCancelled() { return [] }
         let bySize = Dictionary(grouping: candidates, by: { $0.size })
         let toHash = bySize.values.filter { $0.count > 1 }.flatMap { $0 }
 
@@ -56,19 +57,48 @@ enum DuplicateScanner {
 
     private struct Candidate { let url: URL; let size: Int64; let createdAt: Date }
 
-    private static func enumerate(roots: [URL], extensions: Set<String>?) -> [Candidate] {
+    /// Walks each root independently (roots can legitimately be disjoint
+    /// folders), but de-duplicates by *canonical* path across every root
+    /// combined before returning. This is the safety net for overlapping or
+    /// nested user-picked roots (e.g. `~/Desktop` and `~/Desktop/Work` both
+    /// checked, or a symlink pointing back into an already-scanned tree):
+    /// without it, the same physical file gets enumerated twice under two
+    /// `Candidate` entries that share the same resolved URL, and downstream
+    /// grouping would present a file's *only* copy as a "duplicate" of
+    /// itself. Resolving symlinks + standardizing also catches the
+    /// symlink-driven variant of the same problem, not just literal
+    /// double-checked folders. This is the primary fix (robust regardless of
+    /// UI-level containment checks); see also `StartView.chooseFolder()`'s
+    /// containment check as a secondary, earlier warning.
+    /// Checks `isCancelled` and emits `onProgress` periodically during the
+    /// walk itself (not only once after it fully completes) — on a deep or
+    /// slow (e.g. network-volume) tree, pressing Cancel now takes effect
+    /// promptly instead of only after enumeration finishes, and the
+    /// "Scanning…" screen gets a live count instead of sitting static.
+    private static func enumerate(roots: [URL],
+                                   extensions: Set<String>?,
+                                   isCancelled: @escaping () -> Bool,
+                                   onProgress: @escaping @Sendable (Progress) -> Void) -> [Candidate] {
         var out: [Candidate] = []
+        var seenCanonicalPaths = Set<String>()
         let keys: Set<URLResourceKey> = [.isRegularFileKey, .fileSizeKey, .creationDateKey]
+        let progressInterval = 200
         for root in roots {
             guard let enumerator = FileManager.default.enumerator(
                 at: root, includingPropertiesForKeys: Array(keys),
                 options: [.skipsHiddenFiles, .skipsPackageDescendants]) else { continue }
             for case let url as URL in enumerator {
+                if isCancelled() { return out }
                 guard let values = try? url.resourceValues(forKeys: keys),
                       values.isRegularFile == true,
                       let size = values.fileSize, size > 0, // empty files aren't meaningful "duplicates"
                       FileTypeFilter.matches(url, extensions: extensions) else { continue }
+                let canonicalPath = url.resolvingSymlinksInPath().standardizedFileURL.path
+                guard seenCanonicalPaths.insert(canonicalPath).inserted else { continue }
                 out.append(Candidate(url: url, size: Int64(size), createdAt: values.creationDate ?? .distantPast))
+                if out.count % progressInterval == 0 {
+                    onProgress(Progress(filesScanned: out.count, filesToHash: 0, filesHashed: 0))
+                }
             }
         }
         return out

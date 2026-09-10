@@ -55,6 +55,9 @@ private struct ItemCard: View {
                 }
                 .buttonStyle(.plain)
                 .offset(x: 6, y: -6)
+                .help(isSelected ? "Selected for Trash" : "Not selected for Trash")
+                .accessibilityLabel(isSelected ? "Selected for Trash" : "Not selected for Trash")
+                .accessibilityAddTraits(.isButton)
             }
 
             if isKeeperSuggestion {

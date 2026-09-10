@@ -60,13 +60,20 @@ struct ResultsView: View {
     }
 
     private var summaryBar: some View {
-        HStack {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack {
+                if !model.groups.isEmpty {
+                    Text("\(model.groups.count) duplicate sets · \(model.totalWastedBytes.humanBytes) reclaimable")
+                        .appFont(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+            }
             if !model.groups.isEmpty {
-                Text("\(model.groups.count) duplicate sets · \(model.totalWastedBytes.humanBytes) reclaimable")
-                    .appFont(.subheadline)
+                Text("We've pre-selected every copy except the oldest in each set for deletion — review before confirming.")
+                    .appFont(.caption)
                     .foregroundStyle(.secondary)
             }
-            Spacer()
         }
         .padding()
     }

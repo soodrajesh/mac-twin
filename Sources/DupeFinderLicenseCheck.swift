@@ -44,6 +44,16 @@ enum PolarConfig {
             ?? "TODO-REPLACE-WITH-DUPEFINDER-POLAR-ORGANIZATION-ID"
     }
 
+    /// True once `organizationId` has been replaced with a real Polar org
+    /// id. While this is false, `LicenseChecker.verify` short-circuits
+    /// before ever hitting the network — every request against the
+    /// placeholder id 404s from Polar, which otherwise maps to "invalid
+    /// license key," actively misleading a real purchaser who pastes a
+    /// correct key into a build that shipped before step 1 above was done.
+    static var isConfigured: Bool {
+        !organizationId.hasPrefix("TODO-REPLACE")
+    }
+
     /// Where "Unlock Pro" buttons should send the user. TODO: replace with
     /// the real Polar checkout URL once the product exists.
     static let purchaseURL = URL(string: "https://gogenops.com/mac-apps/dupefinder/#pro")!
@@ -220,6 +230,7 @@ public enum LicenseCheckError: LocalizedError {
     case codingError(Error)
     case unknown(String)
     case wrongProduct
+    case notYetAvailable
 
     public var errorDescription: String? {
         switch self {
@@ -243,6 +254,8 @@ public enum LicenseCheckError: LocalizedError {
             return message
         case .wrongProduct:
             return "This license key isn't valid for DupeFinder."
+        case .notYetAvailable:
+            return "DupeFinder Pro isn't available for purchase yet. Please check back soon."
         }
     }
 }
@@ -297,6 +310,15 @@ public class LicenseChecker {
         useCache: Bool = true,
         cacheDuration: TimeInterval = 7 * 24 * 3600
     ) async throws -> License {
+        // Fails closed but honestly: while the placeholder org id is still
+        // in place, every request 404s from Polar and would otherwise map
+        // to "invalid license key" — misleading a real purchaser who pastes
+        // a correct key. Short-circuit before cache or network so the
+        // message is accurate regardless of what's cached.
+        guard PolarConfig.isConfigured else {
+            throw LicenseCheckError.notYetAvailable
+        }
+
         let trimmedKey = licenseKey.trimmingCharacters(in: .whitespaces)
 
         return try await VerifyLock.shared.run(key: trimmedKey) { [self] in

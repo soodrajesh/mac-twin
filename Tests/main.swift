@@ -96,6 +96,53 @@ do {
            "pdf must be covered by the Documents category")
 }
 
+// MARK: - Overlapping scan roots never phantom-duplicate a single unique file
+// (Critical/Safety finding #1 in UX-AUDIT.md: DuplicateScanner.enumerate
+// must dedupe candidates by canonical path across roots, so a file caught
+// by two checked roots — e.g. a parent folder and one of its own
+// subfolders — is never grouped as a "duplicate" of itself.)
+
+do {
+    let tmp = FileManager.default.temporaryDirectory.appendingPathComponent("dupefinder-tests-\(UUID().uuidString)")
+    let subdir = tmp.appendingPathComponent("subdir")
+    try! FileManager.default.createDirectory(at: subdir, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: tmp) }
+
+    let uniqueFile = subdir.appendingPathComponent("only-copy.txt")
+    try! "unique content, no duplicate anywhere".write(to: uniqueFile, atomically: true, encoding: .utf8)
+
+    // `tmp` and `subdir` overlap — `subdir` is nested inside `tmp` — mimicking
+    // a user checking both a folder and one of its own subfolders.
+    let groups = DuplicateScanner.scan(
+        roots: [tmp, subdir],
+        isCancelled: { false },
+        onProgress: { _ in })
+
+    expect(groups.isEmpty, "a single file enumerated via two overlapping roots must never form a phantom duplicate group, got \(groups.count) group(s)")
+}
+
+// MARK: - Overlapping roots still correctly find *real* duplicates
+
+do {
+    let tmp = FileManager.default.temporaryDirectory.appendingPathComponent("dupefinder-tests-\(UUID().uuidString)")
+    let subdir = tmp.appendingPathComponent("subdir")
+    try! FileManager.default.createDirectory(at: subdir, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: tmp) }
+
+    let fileA = tmp.appendingPathComponent("a.txt")
+    let fileB = subdir.appendingPathComponent("b.txt")
+    try! "identical content".write(to: fileA, atomically: true, encoding: .utf8)
+    try! "identical content".write(to: fileB, atomically: true, encoding: .utf8)
+
+    let groups = DuplicateScanner.scan(
+        roots: [tmp, subdir],
+        isCancelled: { false },
+        onProgress: { _ in })
+
+    expect(groups.count == 1, "two genuinely distinct files with identical content must still be found as a duplicate group even when roots overlap, got \(groups.count) group(s)")
+    expect(groups.first?.items.count == 2, "the real duplicate group should contain exactly the two distinct files")
+}
+
 if failures == 0 {
     print("All tests passed.")
 } else {
