@@ -17,9 +17,13 @@ struct ThumbnailView: View {
                     .resizable()
                     .aspectRatio(contentMode: .fill)
             } else {
-                Image(systemName: "doc")
-                    .font(.system(size: size * 0.4))
-                    .foregroundStyle(.secondary)
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .fill(Color.appAccent.opacity(0.15))
+                    .overlay(
+                        Image(systemName: "doc")
+                            .font(.system(size: size * 0.4))
+                            .foregroundStyle(Color.appAccent)
+                    )
             }
         }
         .frame(width: size, height: size)

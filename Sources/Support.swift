@@ -7,6 +7,36 @@ extension Int64 {
     }
 }
 
+/// MacTwin's own identity color (teal, from the app icon's gradient start),
+/// used throughout the UI for primary actions, selected rows, progress
+/// indicators, and tinted icon tiles — per the v2 "modern & colorful" design
+/// system. Deliberately a dedicated constant rather than `Color.accentColor`
+/// so MacTwin keeps its own identity color even when the user's system
+/// accent color differs.
+extension Color {
+    static let appAccent = Color(red: 0.10, green: 0.68, blue: 0.62)
+}
+
+/// A small rounded-square tile behind an SF Symbol — replaces bare symbols
+/// sitting directly on a background throughout the app (folder rows, result
+/// cards, empty states) per the v2 design system's "tinted icon tiles" rule.
+struct IconTile: View {
+    let systemName: String
+    var tint: Color = .appAccent
+    var size: CGFloat = 32
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: size * 0.28, style: .continuous)
+            .fill(tint.opacity(0.15))
+            .frame(width: size, height: size)
+            .overlay(
+                Image(systemName: systemName)
+                    .font(.system(size: size * 0.5, weight: .medium))
+                    .foregroundStyle(tint)
+            )
+    }
+}
+
 /// The app's Text Size setting, in points-per-style plus a per-view
 /// `.appFont(_:weight:)` modifier — deliberately *not* SwiftUI's
 /// `.dynamicTypeSize`/`Font.TextStyle`, because Dynamic Type is an iOS/

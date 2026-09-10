@@ -12,6 +12,13 @@ system as its siblings (semantic colors, a scalable Text Size setting,
 native toolbar chrome) — see `Sources/Support.swift` and
 `Sources/Views/SettingsView.swift`.
 
+**v2 UI refresh:** the interface now follows the gogenops mac-apps "modern &
+colorful" design system — a dedicated teal `Color.appAccent`, tinted
+rounded-square icon tiles instead of bare SF Symbols, card layouts with real
+depth (material backgrounds, stroke, shadow), bolder stat typography for
+file counts/sizes, and spring animations on scan progress and result
+appearance. See `Sources/Support.swift`'s `Color.appAccent` / `IconTile`.
+
 ## Free vs. Pro
 
 The core safety-first loop — full scan, review, and manual Trash — is

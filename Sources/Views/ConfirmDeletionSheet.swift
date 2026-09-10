@@ -25,13 +25,12 @@ struct ConfirmDeletionSheet: View {
         VStack(spacing: 16) {
             if let progress = model.deletionProgress {
                 ProgressView(value: Double(progress.done), total: Double(progress.total))
+                    .tint(.red)
                 Text("Moving \(progress.done) / \(progress.total) to Trash…")
                     .appFont(.body)
                     .foregroundStyle(.secondary)
             } else {
-                Image(systemName: "trash")
-                    .font(.system(size: 32))
-                    .foregroundStyle(.secondary)
+                IconTile(systemName: "trash", tint: .red, size: 48)
                 Text("Move \(model.selectedForTrash.count) files to Trash?")
                     .appFont(.headline)
                 Text("\(model.selectedBytes.humanBytes) will be reclaimed. Files go to Trash, recoverable until you empty it.")

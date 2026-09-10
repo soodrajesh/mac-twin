@@ -7,13 +7,18 @@ struct GroupRowView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("\(group.items.count) copies · \(group.size.humanBytes) each")
-                    .appFont(.subheadline, weight: .bold)
+            HStack(alignment: .firstTextBaseline) {
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Text("\(group.items.count)")
+                        .appFont(.title3, weight: .bold)
+                        .foregroundStyle(Color.appAccent)
+                    Text("copies · \(group.size.humanBytes) each")
+                        .appFont(.subheadline, weight: .semibold)
+                }
                 Spacer()
                 Text("wastes \(group.wastedBytes.humanBytes)")
-                    .appFont(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .appFont(.subheadline, weight: .bold)
+                    .foregroundStyle(.orange)
             }
 
             ScrollView(.horizontal, showsIndicators: false) {
@@ -25,8 +30,10 @@ struct GroupRowView: View {
                 .padding(.vertical, 2)
             }
         }
-        .padding(12)
-        .background(Color(.controlBackgroundColor), in: RoundedRectangle(cornerRadius: 10))
+        .padding(16)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(.separator, lineWidth: 1))
+        .shadow(color: .black.opacity(0.08), radius: 3, y: 1)
     }
 }
 
@@ -50,7 +57,7 @@ private struct ItemCard: View {
                 } label: {
                     Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                         .font(.system(size: 18))
-                        .foregroundStyle(isSelected ? Color.accentColor : Color.secondary)
+                        .foregroundStyle(isSelected ? Color.appAccent : Color.secondary)
                         .background(Circle().fill(.background).padding(1))
                 }
                 .buttonStyle(.plain)
@@ -58,6 +65,7 @@ private struct ItemCard: View {
                 .help(isSelected ? "Selected for Trash" : "Not selected for Trash")
                 .accessibilityLabel(isSelected ? "Selected for Trash" : "Not selected for Trash")
                 .accessibilityAddTraits(.isButton)
+                .animation(.spring(response: 0.3, dampingFraction: 0.85), value: isSelected)
             }
 
             if isKeeperSuggestion {

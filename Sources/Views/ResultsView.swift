@@ -12,19 +12,19 @@ struct ResultsView: View {
             summaryBar
 
             if model.groups.isEmpty {
-                VStack(spacing: 8) {
-                    Image(systemName: "checkmark.circle")
-                        .font(.system(size: 40))
-                        .foregroundStyle(.secondary)
+                VStack(spacing: 10) {
+                    IconTile(systemName: "checkmark.circle", tint: .green, size: 56)
                     Text("No duplicates found")
                         .appFont(.headline)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .transition(.opacity.combined(with: .scale(scale: 0.96)))
             } else {
                 ScrollView {
-                    VStack(spacing: 10) {
+                    VStack(spacing: 12) {
                         ForEach(model.groups) { group in
                             GroupRowView(group: group)
+                                .transition(.opacity.combined(with: .move(edge: .top)))
                         }
                     }
                     .padding()
@@ -57,13 +57,17 @@ struct ResultsView: View {
         } message: {
             Text(exportError ?? "")
         }
+        .animation(.spring(response: 0.35, dampingFraction: 0.85), value: model.groups.count)
     }
 
     private var summaryBar: some View {
         VStack(alignment: .leading, spacing: 2) {
-            HStack {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
                 if !model.groups.isEmpty {
-                    Text("\(model.groups.count) duplicate sets · \(model.totalWastedBytes.humanBytes) reclaimable")
+                    Text(model.totalWastedBytes.humanBytes)
+                        .appFont(.title3, weight: .bold)
+                        .foregroundStyle(Color.appAccent)
+                    Text("reclaimable across \(model.groups.count) duplicate sets")
                         .appFont(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -132,9 +136,10 @@ struct ResultsView: View {
                 showConfirm = true
             } label: {
                 Text(count == 0 ? "Move Selected to Trash" : "Move \(count) to Trash (\(model.selectedBytes.humanBytes))")
-                    .appFont(.body)
+                    .appFont(.body, weight: .semibold)
             }
             .buttonStyle(.borderedProminent)
+            .tint(.red)
             .disabled(count == 0)
         }
         .padding()
@@ -148,6 +153,7 @@ struct ScanningView: View {
         VStack(spacing: 16) {
             ProgressView()
                 .controlSize(.large)
+                .tint(.appAccent)
             if let progress = model.scanProgress {
                 Text(progress.filesToHash > 0
                      ? "Hashing \(progress.filesHashed) / \(progress.filesToHash) candidates…"

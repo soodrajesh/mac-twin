@@ -28,9 +28,7 @@ struct StartView: View {
             Spacer()
 
             VStack(spacing: 8) {
-                Image(systemName: "doc.on.doc")
-                    .font(.system(size: 44))
-                    .foregroundStyle(.secondary)
+                IconTile(systemName: "doc.on.doc", size: 64)
                 Text("MacTwin")
                     .appFont(.title2, weight: .bold)
                 Text("Finds files with identical content, so you can trash the extra copies. Nothing is scanned outside the folders you pick.")
@@ -40,14 +38,12 @@ struct StartView: View {
                     .frame(maxWidth: 420)
             }
 
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 8) {
                 ForEach(commonFolders, id: \.url) { folder in
-                    Toggle(folder.name, isOn: binding(for: folder.url))
-                        .appFont(.body)
+                    folderRow(name: folder.name, isOn: binding(for: folder.url))
                 }
                 ForEach(customFolders, id: \.self) { url in
-                    Toggle(url.abbreviatedPath, isOn: binding(for: url))
-                        .appFont(.body)
+                    folderRow(name: url.abbreviatedPath, isOn: binding(for: url))
                 }
 
                 if isProLicensed {
@@ -68,7 +64,9 @@ struct StartView: View {
             }
             .frame(width: 320, alignment: .leading)
             .padding(20)
-            .background(Color(.controlBackgroundColor), in: RoundedRectangle(cornerRadius: 10))
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(.separator, lineWidth: 1))
+            .shadow(color: .black.opacity(0.08), radius: 4, y: 1)
 
             VStack(alignment: .leading, spacing: 10) {
                 Toggle("All File Types", isOn: $allFileTypes)
@@ -85,16 +83,20 @@ struct StartView: View {
             }
             .frame(width: 320, alignment: .leading)
             .padding(20)
-            .background(Color(.controlBackgroundColor), in: RoundedRectangle(cornerRadius: 10))
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(.separator, lineWidth: 1))
+            .shadow(color: .black.opacity(0.08), radius: 4, y: 1)
+            .animation(.spring(response: 0.35, dampingFraction: 0.8), value: allFileTypes)
 
             Button {
                 model.startScan(roots: Array(checked), extensions: resolvedExtensions)
             } label: {
                 Text("Scan for Duplicates")
-                    .appFont(.body)
+                    .appFont(.body, weight: .semibold)
                     .frame(maxWidth: 200)
             }
             .buttonStyle(.borderedProminent)
+            .tint(.appAccent)
             .controlSize(.large)
             .disabled(checked.isEmpty || (resolvedExtensions?.isEmpty ?? false))
 
@@ -116,6 +118,20 @@ struct StartView: View {
         } message: {
             Text(overlapWarning ?? "")
         }
+    }
+
+    @ViewBuilder
+    private func folderRow(name: String, isOn: Binding<Bool>) -> some View {
+        Toggle(isOn: isOn) {
+            Text(name).appFont(.body)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .fill(isOn.wrappedValue ? Color.appAccent.opacity(0.12) : Color.clear)
+        )
+        .animation(.spring(response: 0.3, dampingFraction: 0.85), value: isOn.wrappedValue)
     }
 
     private func binding(for url: URL) -> Binding<Bool> {

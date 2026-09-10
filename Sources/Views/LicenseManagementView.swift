@@ -23,9 +23,10 @@ struct LicenseManagementView: View {
                 if isVerifying {
                     ProgressView()
                         .controlSize(.small)
+                        .tint(.appAccent)
                 } else {
                     Image(systemName: isLicenseActive ? "checkmark.circle.fill" : "circle")
-                        .foregroundColor(isLicenseActive ? .green : .gray)
+                        .foregroundColor(isLicenseActive ? .appAccent : .secondary)
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -39,8 +40,8 @@ struct LicenseManagementView: View {
                 Spacer()
             }
             .padding(12)
-            .background(Color(.controlBackgroundColor))
-            .cornerRadius(8)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(.separator, lineWidth: 1))
 
             if !verificationMessage.isEmpty {
                 HStack(spacing: 8) {
