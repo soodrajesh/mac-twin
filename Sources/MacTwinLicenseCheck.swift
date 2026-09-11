@@ -41,22 +41,22 @@ enum PolarConfig {
     /// trusting an unrelated org.
     static var organizationId: String {
         ProcessInfo.processInfo.environment["MACTWIN_POLAR_ORG_ID"]
-            ?? "TODO-REPLACE-WITH-MACTWIN-POLAR-ORGANIZATION-ID"
+            ?? "41537814-c35a-4def-bf4e-888ef4f530ce"
     }
 
-    /// True once `organizationId` has been replaced with a real Polar org
-    /// id. While this is false, `LicenseChecker.verify` short-circuits
-    /// before ever hitting the network — every request against the
-    /// placeholder id 404s from Polar, which otherwise maps to "invalid
-    /// license key," actively misleading a real purchaser who pastes a
-    /// correct key into a build that shipped before step 1 above was done.
-    static var isConfigured: Bool {
-        !organizationId.hasPrefix("TODO-REPLACE")
+    /// MacTwin Pro's own License Keys benefit — scopes validation to this
+    /// specific product since the org is shared across the mac-apps line
+    /// (see `validateRemote`'s comment).
+    static var benefitId: String {
+        ProcessInfo.processInfo.environment["MACTWIN_POLAR_BENEFIT_ID"]
+            ?? "d75a467c-47ef-4c77-82b9-a464456c44c8"
     }
 
-    /// Where "Unlock Pro" buttons should send the user. TODO: replace with
-    /// the real Polar checkout URL once the product exists.
-    static let purchaseURL = URL(string: "https://gogenops.com/mac-apps/mactwin/#pro")!
+    static var isConfigured: Bool { true }
+
+    /// Real "MacTwin Pro" checkout link (Polar → Products → MacTwin Pro →
+    /// Share).
+    static let purchaseURL = URL(string: "https://buy.polar.sh/polar_cl_8UZJWpUX0j3fUDgd07tdfqb8vqufh8KLu8K6W3x1lal")!
 
     /// `@AppStorage` key for the stored license key — scoped to this app's
     /// own bundle id, distinct from MacGroom's
@@ -362,9 +362,17 @@ public class LicenseChecker {
         // Bump this — and test against 2026-10 — before the Jan 2027
         // removal date.
         request.setValue("2026-04", forHTTPHeaderField: "Polar-Version")
+        // MacTwin Pro shares a Polar organization with MacGroom Pro and the
+        // other mac-apps products — the org alone doesn't tell Polar which
+        // product a key was bought for, so a key valid for any of them
+        // would otherwise also validate here. Passing `benefit_id` scopes
+        // the check to MacTwin's own License Keys benefit specifically; the
+        // response's own `benefit_id` is also cross-checked below as a
+        // second line of defense.
         request.httpBody = try JSONEncoder().encode([
             "key": licenseKey,
-            "organization_id": PolarConfig.organizationId
+            "organization_id": PolarConfig.organizationId,
+            "benefit_id": PolarConfig.benefitId
         ])
 
         let (data, httpResponse) = try await send(request)
@@ -379,15 +387,21 @@ public class LicenseChecker {
             let limitActivations: Int?
             let usage: Int?
             let expiresAt: String?
+            let benefitId: String?
 
             enum CodingKeys: String, CodingKey {
                 case key, status, usage
                 case limitActivations = "limit_activations"
                 case expiresAt = "expires_at"
+                case benefitId = "benefit_id"
             }
         }
 
         let response = try decode(PolarLicenseKeyResponse.self, from: data)
+
+        guard response.benefitId == PolarConfig.benefitId else {
+            throw LicenseCheckError.wrongProduct
+        }
 
         return License(
             key: response.key,
