@@ -27,6 +27,12 @@ final class DupeModel: ObservableObject {
     @Published var deletionProgress: (done: Int, total: Int)?
     @Published var lastError: String?
 
+    /// Set once a launch-time (or manual, from Settings) update check finds
+    /// a newer version than this build — `nil` means "none found," which
+    /// covers both "already latest" and "check failed/offline," identically
+    /// silent either way (see `checkForUpdates()`).
+    @Published var availableUpdate: UpdateManifest?
+
     private var scanTask: Task<Void, Never>?
     private var scheduledActivity: NSBackgroundActivityScheduler?
 
@@ -98,6 +104,19 @@ final class DupeModel: ObservableObject {
     func cancelScan() {
         scanTask?.cancel()
         isScanning = false
+    }
+
+    /// Runs at launch (silently — no failure UI, no "you're up to date"
+    /// toast) and on demand from Settings' "Check for Updates" button.
+    /// Network failure and "already latest" both just leave
+    /// `availableUpdate` at `nil`; there's nothing meaningfully different
+    /// to tell the user between those two cases.
+    func checkForUpdates() {
+        Task.detached(priority: .background) { [weak self] in
+            let manifest = await UpdateCheckService.checkForUpdate()
+            guard let self else { return }
+            await MainActor.run { self.availableUpdate = manifest }
+        }
     }
 
     func toggleSelection(_ url: URL) {
