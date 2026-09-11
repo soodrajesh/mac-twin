@@ -354,6 +354,14 @@ public class LicenseChecker {
         request.timeoutInterval = 10
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        // Pinned per Polar's date-based API versioning rollout (announced
+        // 2026-09-11): 2026-10 becomes Current on Oct 1, 2026 and this
+        // contract becomes Deprecated (still stable until Jan 2027). Without
+        // this header, requests silently ride Current and would break at
+        // each quarterly release instead of on our own migration schedule.
+        // Bump this — and test against 2026-10 — before the Jan 2027
+        // removal date.
+        request.setValue("2026-04", forHTTPHeaderField: "Polar-Version")
         request.httpBody = try JSONEncoder().encode([
             "key": licenseKey,
             "organization_id": PolarConfig.organizationId
