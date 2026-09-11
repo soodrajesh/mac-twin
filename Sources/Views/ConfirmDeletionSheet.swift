@@ -31,6 +31,7 @@ struct ConfirmDeletionSheet: View {
                     .foregroundStyle(.secondary)
             } else {
                 IconTile(systemName: "trash", tint: .red, size: 48)
+                    .accessibilityHidden(true)
                 Text("Move \(model.selectedForTrash.count) files to Trash?")
                     .appFont(.headline)
                 Text("\(model.selectedBytes.humanBytes) will be reclaimed. Files go to Trash, recoverable until you empty it.")
