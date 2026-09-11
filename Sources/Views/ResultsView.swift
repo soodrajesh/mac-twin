@@ -14,6 +14,7 @@ struct ResultsView: View {
             if model.groups.isEmpty {
                 VStack(spacing: 10) {
                     IconTile(systemName: "checkmark.circle", tint: .green, size: 56)
+                        .accessibilityHidden(true)
                     Text("No duplicates found")
                         .appFont(.headline)
                 }

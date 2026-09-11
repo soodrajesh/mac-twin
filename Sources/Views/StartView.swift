@@ -29,6 +29,7 @@ struct StartView: View {
 
             VStack(spacing: 8) {
                 IconTile(systemName: "doc.on.doc", size: 64)
+                    .accessibilityHidden(true)
                 Text("MacTwin")
                     .appFont(.title2, weight: .bold)
                 Text("Finds files with identical content, so you can trash the extra copies. Nothing is scanned outside the folders you pick.")
