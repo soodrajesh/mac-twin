@@ -29,6 +29,9 @@ struct MacTwinApp: App {
                     licenseChecker = LicenseChecker()
                     await verifyLicense()
                 }
+                .task {
+                    model.checkForUpdates()
+                }
                 .onChange(of: isProLicensed) { licensed in
                     model.configureScheduledScans(
                         enabled: licensed && scheduledScansEnabled,
