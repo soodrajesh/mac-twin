@@ -95,6 +95,14 @@ enum DuplicateScanner {
                 options: [.skipsHiddenFiles, .skipsPackageDescendants]) else { continue }
             for case let url as URL in enumerator {
                 if isCancelled() { return out }
+                // Skip the whole subtree, not just this entry — cheaper than
+                // walking into a large excluded folder only to filter every
+                // file back out one by one, and correct whether `url` here
+                // is the excluded directory itself or a file inside it.
+                if ExclusionStore.isExcluded(url) {
+                    enumerator.skipDescendants()
+                    continue
+                }
                 guard let values = try? url.resourceValues(forKeys: keys),
                       values.isRegularFile == true,
                       let size = values.fileSize, size > 0, // empty files aren't meaningful "duplicates"

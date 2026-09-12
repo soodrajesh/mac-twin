@@ -138,6 +138,11 @@ private struct ScanningTab: View {
     @Environment(\.isProLicensed) private var isProLicensed
     @AppStorage("scheduledScansEnabled") private var scheduledScansEnabled = false
     @AppStorage("scheduledScanIntervalHours") private var scheduledScanIntervalHours = ScheduledScanInterval.daily.rawValue
+    /// Mirrors `ExclusionStore.paths` in local `@State` — the store itself
+    /// is a plain `UserDefaults` wrapper, not `ObservableObject`, so every
+    /// add/remove here re-reads it back into this array to redraw the list.
+    @State private var excludedPaths: [String] = ExclusionStore.paths
+    @EnvironmentObject var model: DupeModel
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -149,6 +154,55 @@ private struct ScanningTab: View {
                      : "Free version scans Downloads, Pictures, Desktop, Documents, and Movies. Unlock Pro to add any custom folder.")
                     .appFont(.callout)
                     .foregroundStyle(.secondary)
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Excluded Folders")
+                    .appFont(.headline)
+                Text("Never scanned, in any root you pick above.")
+                    .appFont(.callout)
+                    .foregroundStyle(.secondary)
+
+                if excludedPaths.isEmpty {
+                    Text("None").appFont(.callout).foregroundStyle(.secondary)
+                } else {
+                    VStack(alignment: .leading, spacing: 6) {
+                        ForEach(excludedPaths, id: \.self) { path in
+                            HStack {
+                                Text(URL(fileURLWithPath: path).abbreviatedPath)
+                                    .appFont(.callout)
+                                    .lineLimit(1)
+                                    .truncationMode(.middle)
+                                Spacer()
+                                Button {
+                                    ExclusionStore.remove(path)
+                                    excludedPaths = ExclusionStore.paths
+                                    model.rescan()
+                                } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                }
+                                .buttonStyle(.plain)
+                                .foregroundStyle(.secondary)
+                                .help("Stop excluding this folder")
+                                .accessibilityLabel("Stop excluding this folder")
+                            }
+                        }
+                    }
+                }
+
+                Button("Add Folder…") {
+                    let panel = NSOpenPanel()
+                    panel.canChooseFiles = false
+                    panel.canChooseDirectories = true
+                    panel.allowsMultipleSelection = false
+                    panel.prompt = "Exclude"
+                    if panel.runModal() == .OK, let url = panel.url {
+                        ExclusionStore.add(url)
+                        excludedPaths = ExclusionStore.paths
+                        model.rescan()
+                    }
+                }
+                .appFont(.callout)
             }
 
             VStack(alignment: .leading, spacing: 8) {

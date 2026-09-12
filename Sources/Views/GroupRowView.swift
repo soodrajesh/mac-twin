@@ -93,6 +93,17 @@ private struct ItemCard: View {
                 pb.clearContents()
                 pb.setString(item.url.path, forType: .string)
             }
+            Divider()
+            // Excluding the exact folder the user is looking at right now,
+            // rather than sending them to Settings to re-navigate to it in
+            // a file picker — same reasoning as MacGroom's equivalent.
+            Button {
+                let folder = item.url.deletingLastPathComponent()
+                ExclusionStore.add(folder)
+                model.rescan()
+            } label: {
+                Label("Exclude \"\(item.url.deletingLastPathComponent().lastPathComponent)\" Folder From Scans", systemImage: "eye.slash")
+            }
         }
         .onTapGesture(count: 2) { revealInFinder(item.url) }
     }
