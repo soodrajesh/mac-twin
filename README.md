@@ -19,6 +19,10 @@ depth (material backgrounds, stroke, shadow), bolder stat typography for
 file counts/sizes, and spring animations on scan progress and result
 appearance. See `Sources/Support.swift`'s `Color.appAccent` / `IconTile`.
 
+## Screenshots
+
+![MacTwin's folder picker: Downloads, Pictures, Desktop, Documents, and Movies checkboxes, an All File Types toggle, and a Scan for Duplicates button](screenshots/folder-picker-dark.png)
+
 ## Free vs. Pro
 
 The core safety-first loop — full scan, review, and manual Trash — is
