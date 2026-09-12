@@ -2,43 +2,20 @@ import Foundation
 import CryptoKit
 import Security
 
-/// Configuration for MacTwin Pro's Polar.sh product.
+/// Configuration for MacTwin Pro's Polar.sh product — live and
+/// purchasable (see `purchaseURL`).
 ///
-/// MacTwin Pro is a SEPARATE product from MacGroom Pro — per-app
-/// licensing, not a bundle — so it needs its own Polar organization (or at
-/// minimum its own product within one), independent of MacGroom's.
-///
-/// TODO(polar-setup): none of this exists yet. Before shipping Pro gating
-/// for real:
-///   1. Create a "MacTwin Pro" product in Polar.sh (either a new
-///      organization, or a new product inside the existing gogenops
-///      organization — decide deliberately, see the warning below).
-///   2. Enable that product's License Keys benefit.
-///   3. Copy the organization's ID from Polar's dashboard and paste it
-///      below as `organizationId` (replacing the placeholder).
-///   4. Point "Unlock Pro" buttons at that product's real checkout URL —
-///      `purchaseURL` below is a placeholder.
-///   5. Optionally set env var MACTWIN_POLAR_ORG_ID to override
-///      `organizationId` at build/run time (useful for testing against a
-///      sandbox org before the real one is public).
-///
-/// ⚠️ Known limitation, read before reusing MacGroom's existing
-/// organization ID here: Polar's `/v1/customer-portal/license-keys/validate`
-/// endpoint validates a key against an *organization*, not a specific
-/// product within it — the response this app decodes (see `License`)
-/// carries no product/benefit identifier to cross-check. If MacTwin Pro
-/// is created as a second product inside MacGroom's existing gogenops
-/// organization, a valid MacGroom Pro license key would also validate here
-/// and unlock MacTwin Pro, and vice versa. That may be an acceptable,
-/// deliberate choice (an implicit "gogenops Pro bundle") — but it must be
-/// a decision made when filling in step 1 above, not a silent accident.
-/// The placeholder organization ID below is intentionally invalid so Pro
-/// stays locked (fails closed) until someone makes that call.
+/// MacTwin Pro is a separate *product* from MacGroom Pro, deliberately
+/// sharing the same gogenops Polar *organization* rather than getting its
+/// own — Polar's validate endpoint only checks org-level validity, not
+/// which product a key was bought for, so `benefitId` below scopes every
+/// check to MacTwin's own License Keys benefit specifically (enforced in
+/// `LicenseChecker.validateRemote`, both as a request parameter and by
+/// cross-checking the response). Without that, a MacGroom Pro key would
+/// also validate here, and vice versa.
 enum PolarConfig {
-    /// Polar's organization ID for MacTwin Pro's Polar org. Placeholder
-    /// until the TODO above is done — a request with this value 404s from
-    /// Polar, so every license check fails closed rather than silently
-    /// trusting an unrelated org.
+    /// Polar's organization ID — shared with MacGroom and the rest of the
+    /// mac-apps line (see the type's doc comment for why that's safe here).
     static var organizationId: String {
         ProcessInfo.processInfo.environment["MACTWIN_POLAR_ORG_ID"]
             ?? "41537814-c35a-4def-bf4e-888ef4f530ce"
@@ -310,11 +287,13 @@ public class LicenseChecker {
         useCache: Bool = true,
         cacheDuration: TimeInterval = 7 * 24 * 3600
     ) async throws -> License {
-        // Fails closed but honestly: while the placeholder org id is still
-        // in place, every request 404s from Polar and would otherwise map
-        // to "invalid license key" — misleading a real purchaser who pastes
-        // a correct key. Short-circuit before cache or network so the
-        // message is accurate regardless of what's cached.
+        // Fails closed but honestly: if Polar isn't configured (only
+        // possible today via a misconfigured MACTWIN_POLAR_ORG_ID/
+        // MACTWIN_POLAR_BENEFIT_ID override), every request would 404 from
+        // Polar and otherwise map to "invalid license key" — misleading a
+        // real purchaser who pastes a correct key. Short-circuit before
+        // cache or network so the message is accurate regardless of what's
+        // cached.
         guard PolarConfig.isConfigured else {
             throw LicenseCheckError.notYetAvailable
         }

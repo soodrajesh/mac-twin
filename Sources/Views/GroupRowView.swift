@@ -41,6 +41,7 @@ private struct ItemCard: View {
     let item: FileRecord
     let isKeeperSuggestion: Bool
     @EnvironmentObject var model: DupeModel
+    @Environment(\.isProLicensed) private var isProLicensed
 
     private var isSelected: Bool { model.selectedForTrash.contains(item.url) }
 
@@ -97,12 +98,24 @@ private struct ItemCard: View {
             // Excluding the exact folder the user is looking at right now,
             // rather than sending them to Settings to re-navigate to it in
             // a file picker — same reasoning as MacGroom's equivalent.
+            // Excluded Folders itself is a Pro feature here (unlike
+            // MacGroom's free equivalent) — a free user still sees the
+            // action rather than it silently vanishing, but it opens
+            // Settings' License tab instead of excluding.
             Button {
-                let folder = item.url.deletingLastPathComponent()
-                ExclusionStore.add(folder)
-                model.rescan()
+                if isProLicensed {
+                    let folder = item.url.deletingLastPathComponent()
+                    ExclusionStore.add(folder)
+                    model.rescan()
+                } else {
+                    NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+                }
             } label: {
-                Label("Exclude \"\(item.url.deletingLastPathComponent().lastPathComponent)\" Folder From Scans", systemImage: "eye.slash")
+                if isProLicensed {
+                    Label("Exclude \"\(item.url.deletingLastPathComponent().lastPathComponent)\" Folder From Scans", systemImage: "eye.slash")
+                } else {
+                    Label("Exclude Folder From Scans (Pro)", systemImage: "lock.fill")
+                }
             }
         }
         .onTapGesture(count: 2) { revealInFinder(item.url) }
