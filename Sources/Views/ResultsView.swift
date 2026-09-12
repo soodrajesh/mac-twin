@@ -1,11 +1,40 @@
 import SwiftUI
 import AppKit
 
+/// How the duplicate-set list is ordered. Purely a display concern — it
+/// never touches `model.groups` itself, so selection/trash state (keyed by
+/// group id) is unaffected by re-sorting.
+enum ResultsSortOption: String, CaseIterable, Identifiable {
+    case size = "Size"
+    case name = "Name"
+    case date = "Date"
+    var id: String { rawValue }
+}
+
 struct ResultsView: View {
     @EnvironmentObject var model: DupeModel
     @Environment(\.isProLicensed) private var isProLicensed
     @State private var showConfirm = false
     @State private var exportError: String?
+    @State private var sortOption: ResultsSortOption = .size
+
+    private var sortedGroups: [DuplicateGroup] {
+        switch sortOption {
+        case .size:
+            // Matches DuplicateGrouping's own default order (most space
+            // reclaimed first) — the common "what's actually worth reviewing"
+            // ordering, kept as the default.
+            return model.groups.sorted { $0.wastedBytes > $1.wastedBytes }
+        case .name:
+            return model.groups.sorted {
+                $0.keeper.url.lastPathComponent.localizedStandardCompare($1.keeper.url.lastPathComponent) == .orderedAscending
+            }
+        case .date:
+            // Newest keeper first — surfaces recently-created duplicate sets,
+            // e.g. ones from a scan you just ran versus long-settled ones.
+            return model.groups.sorted { $0.keeper.createdAt > $1.keeper.createdAt }
+        }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -23,7 +52,7 @@ struct ResultsView: View {
             } else {
                 ScrollView {
                     VStack(spacing: 12) {
-                        ForEach(model.groups) { group in
+                        ForEach(sortedGroups) { group in
                             GroupRowView(group: group)
                                 .transition(.opacity.combined(with: .move(edge: .top)))
                         }
@@ -45,6 +74,7 @@ struct ResultsView: View {
             }
             ToolbarItemGroup(placement: .automatic) {
                 if !model.groups.isEmpty {
+                    sortMenu
                     autoSelectMenu
                     exportButton
                 }
@@ -81,6 +111,18 @@ struct ResultsView: View {
             }
         }
         .padding()
+    }
+
+    private var sortMenu: some View {
+        Menu {
+            Picker("Sort by", selection: $sortOption) {
+                ForEach(ResultsSortOption.allCases) { option in
+                    Text(option.rawValue).tag(option)
+                }
+            }
+        } label: {
+            Label("Sort: \(sortOption.rawValue)", systemImage: "arrow.up.arrow.down")
+        }
     }
 
     @ViewBuilder
