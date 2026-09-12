@@ -110,6 +110,15 @@ final class DupeModel: ObservableObject {
         isScanning = false
     }
 
+    /// Re-runs the scan against whatever roots/extensions were last used —
+    /// e.g. after excluding a folder from a result row, so it disappears
+    /// from every group it appeared in, not just the one row it was
+    /// excluded from.
+    func rescan() {
+        guard !lastScanRoots.isEmpty else { return }
+        startScan(roots: lastScanRoots, extensions: lastScanExtensions)
+    }
+
     /// Runs at launch (silently — no failure UI, no "you're up to date"
     /// toast) and on demand from Settings' "Check for Updates" button.
     /// Network failure and "already latest" both just leave
