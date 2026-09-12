@@ -11,6 +11,7 @@ swiftc -O \
   Sources/DuplicateGrouping.swift \
   Sources/FileCategory.swift \
   Sources/Services/HashService.swift \
+  Sources/Services/ExclusionStore.swift \
   Sources/Services/DuplicateScanner.swift \
   -o /tmp/mactwin-tests
 
