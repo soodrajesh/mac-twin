@@ -29,7 +29,13 @@ enum DuplicateScanner {
         var hashedCount = 0
         records.reserveCapacity(toHash.count)
 
-        let queue = DispatchQueue(label: "mactwin.hash", attributes: .concurrent)
+        // .utility (not .default/.unspecified): hashing is bulk, non-interactive
+        // work — at full core-count concurrency an unspecified QoS competes
+        // evenly with the UI and other apps' interactive work for CPU time,
+        // which is what made a scan feel like the whole Mac was hanging.
+        // .utility tells the scheduler to yield to interactive/user-initiated
+        // work under contention instead.
+        let queue = DispatchQueue(label: "mactwin.hash", qos: .utility, attributes: .concurrent)
         let group = DispatchGroup()
         let sem = DispatchSemaphore(value: max(1, ProcessInfo.processInfo.activeProcessorCount))
 

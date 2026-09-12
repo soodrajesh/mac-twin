@@ -81,7 +81,11 @@ final class DupeModel: ObservableObject {
         isScanning = true
         hasScanned = false
 
-        scanTask = Task.detached { [weak self] in
+        // .utility, matching DuplicateScanner's internal hashing queue — a
+        // scan is bulk background work; running it at the default/inherited
+        // priority let it compete evenly with the UI and other apps for CPU,
+        // which is what made a scan feel like the whole Mac was hanging.
+        scanTask = Task.detached(priority: .utility) { [weak self] in
             guard let self else { return }
             let result = DuplicateScanner.scan(
                 roots: roots,
