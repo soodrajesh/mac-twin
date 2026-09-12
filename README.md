@@ -23,6 +23,16 @@ appearance. See `Sources/Support.swift`'s `Color.appAccent` / `IconTile`.
 
 ![MacTwin's folder picker: Downloads, Pictures, Desktop, Documents, and Movies checkboxes, an All File Types toggle, and a Scan for Duplicates button](screenshots/folder-picker-dark.png)
 
+Results, with a suggested keep highlighted and every other copy pre-checked for Trash — sortable by Size, Name, or Date:
+
+| Results | Sort by |
+|---|---|
+| ![MacTwin's results: a 3-copy .ipynb set and a 4-copy train.csv set, each with a suggested keep and sizes/paths shown](screenshots/results-dark.png) | ![The results toolbar's Sort by menu open, showing Size (checked), Name, and Date](screenshots/sort-menu-dark.png) |
+
+Excluding a folder — from Settings, or right-click any result — keeps it out of every future scan (MacTwin Pro):
+
+![MacTwin's Scanning settings: Scan Scope, and an Excluded Folders list with Add Folder…](screenshots/excluded-folders-dark.png)
+
 ## Free vs. Pro
 
 The core safety-first loop — full scan, review, and manual Trash — is
@@ -36,6 +46,7 @@ deciding what to delete or actually deleting it is ever gated.
 | Auto-select strategy | Keep Oldest (default) | + Keep Newest, Keep Shortest Path |
 | Export scan report (CSV) | — | ✅ |
 | Scheduled background scans | — | ✅ |
+| Exclude folders from scans | — | ✅ |
 
 ### MacTwin Pro
 

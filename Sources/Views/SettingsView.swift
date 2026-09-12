@@ -157,12 +157,18 @@ private struct ScanningTab: View {
             }
 
             VStack(alignment: .leading, spacing: 8) {
-                Text("Excluded Folders")
-                    .appFont(.headline)
+                HStack(spacing: 6) {
+                    Text("Excluded Folders")
+                        .appFont(.headline)
+                    ProBadge()
+                }
                 Text("Never scanned, in any root you pick above.")
                     .appFont(.callout)
                     .foregroundStyle(.secondary)
 
+                // A path excluded during a since-expired Pro period stays
+                // visible and removable either way — Pro only gates adding
+                // new exclusions, not un-gating ones already set.
                 if excludedPaths.isEmpty {
                     Text("None").appFont(.callout).foregroundStyle(.secondary)
                 } else {
@@ -190,19 +196,23 @@ private struct ScanningTab: View {
                     }
                 }
 
-                Button("Add Folder…") {
-                    let panel = NSOpenPanel()
-                    panel.canChooseFiles = false
-                    panel.canChooseDirectories = true
-                    panel.allowsMultipleSelection = false
-                    panel.prompt = "Exclude"
-                    if panel.runModal() == .OK, let url = panel.url {
-                        ExclusionStore.add(url)
-                        excludedPaths = ExclusionStore.paths
-                        model.rescan()
+                if isProLicensed {
+                    Button("Add Folder…") {
+                        let panel = NSOpenPanel()
+                        panel.canChooseFiles = false
+                        panel.canChooseDirectories = true
+                        panel.allowsMultipleSelection = false
+                        panel.prompt = "Exclude"
+                        if panel.runModal() == .OK, let url = panel.url {
+                            ExclusionStore.add(url)
+                            excludedPaths = ExclusionStore.paths
+                            model.rescan()
+                        }
                     }
+                    .appFont(.callout)
+                } else {
+                    UnlockProButton(label: "Unlock Pro to Exclude Folders")
                 }
-                .appFont(.callout)
             }
 
             VStack(alignment: .leading, spacing: 8) {
@@ -250,6 +260,7 @@ private struct LicenseTab: View {
                     "Export scan reports (CSV)",
                     "Smart auto-select (beyond Keep Oldest)",
                     "Unlimited custom-folder scan scope",
+                    "Exclude folders from scans",
                 ], id: \.self) { line in
                     Text("• \(line)").appFont(.callout).foregroundStyle(.secondary)
                 }
