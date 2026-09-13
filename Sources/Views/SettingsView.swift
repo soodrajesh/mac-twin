@@ -60,8 +60,14 @@ enum TextSizeSetting: String, CaseIterable, Identifiable {
     }
 }
 
-/// How often a Pro scheduled scan re-runs.
+/// How often a Pro scheduled scan re-runs. Rounded out to include shorter
+/// intervals — the original 3 options (daily and up) were too coarse for
+/// anyone who wants MacTwin catching duplicates within the same day, e.g.
+/// a Downloads folder that fills up constantly.
 enum ScheduledScanInterval: Int, CaseIterable, Identifiable {
+    case hourly = 1
+    case every6Hours = 6
+    case every12Hours = 12
     case daily = 24
     case every3Days = 72
     case weekly = 168
@@ -70,6 +76,9 @@ enum ScheduledScanInterval: Int, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
+        case .hourly:      return "Hourly"
+        case .every6Hours: return "Every 6 Hours"
+        case .every12Hours: return "Every 12 Hours"
         case .daily:       return "Daily"
         case .every3Days:  return "Every 3 Days"
         case .weekly:      return "Weekly"
