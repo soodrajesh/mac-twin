@@ -238,13 +238,25 @@ private struct ScanningTab: View {
                     Toggle("Enable scheduled scans", isOn: $scheduledScansEnabled)
                         .appFont(.body)
                     if scheduledScansEnabled {
-                        Picker("Frequency", selection: $scheduledScanIntervalHours) {
+                        // A fixed preset list can't match everyone's actual
+                        // routine — this is a real number you can set to
+                        // anything from 1 hour to 30 days, not a
+                        // pick-one-of-six menu. The presets below are just
+                        // one-tap shortcuts onto the same value.
+                        Stepper(value: $scheduledScanIntervalHours, in: 1...720) {
+                            Text("Every \(scheduledScanIntervalHours) hour\(scheduledScanIntervalHours == 1 ? "" : "s")")
+                                .appFont(.body)
+                        }
+                        .frame(maxWidth: 260)
+
+                        HStack(spacing: 6) {
                             ForEach(ScheduledScanInterval.allCases) { interval in
-                                Text(interval.label).tag(interval.rawValue)
+                                Button(interval.label) { scheduledScanIntervalHours = interval.rawValue }
+                                    .buttonStyle(.bordered)
+                                    .controlSize(.small)
+                                    .tint(scheduledScanIntervalHours == interval.rawValue ? .accentColor : .secondary)
                             }
                         }
-                        .appFont(.body)
-                        .frame(maxWidth: 220)
                     }
                 } else {
                     UnlockProButton(label: "Unlock Pro for Scheduled Scans")
