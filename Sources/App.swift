@@ -7,8 +7,6 @@ struct MacTwinApp: App {
     @AppStorage("appearanceMode") private var appearanceMode = AppearanceMode.system
     @AppStorage("textSize") private var textSize = TextSizeSetting.medium
     @AppStorage(PolarConfig.storedKeyDefaultsKey) private var storedLicenseKey = ""
-    @AppStorage("scheduledScansEnabled") private var scheduledScansEnabled = false
-    @AppStorage("scheduledScanIntervalHours") private var scheduledScanIntervalHours = ScheduledScanInterval.daily.rawValue
 
     @State private var licenseChecker: LicenseChecker?
     @State private var isProLicensed = false
@@ -31,30 +29,6 @@ struct MacTwinApp: App {
                 }
                 .task {
                     model.checkForUpdates()
-                }
-                .onChange(of: isProLicensed) { licensed in
-                    model.configureScheduledScans(
-                        enabled: licensed && scheduledScansEnabled,
-                        intervalHours: scheduledScanIntervalHours)
-                }
-                .onChange(of: scheduledScansEnabled) { enabled in
-                    model.configureScheduledScans(
-                        enabled: isProLicensed && enabled,
-                        intervalHours: scheduledScanIntervalHours)
-                }
-                .onChange(of: scheduledScanIntervalHours) { hours in
-                    model.configureScheduledScans(
-                        enabled: isProLicensed && scheduledScansEnabled,
-                        intervalHours: hours)
-                }
-                .onChange(of: model.hasScanned) { scanned in
-                    // A manual scan just finished — re-arm the scheduler
-                    // so a future background run uses the folders/filter
-                    // that were actually just used.
-                    guard scanned else { return }
-                    model.configureScheduledScans(
-                        enabled: isProLicensed && scheduledScansEnabled,
-                        intervalHours: scheduledScanIntervalHours)
                 }
         }
         .windowResizability(.contentMinSize)

@@ -34,11 +34,9 @@ final class DupeModel: ObservableObject {
     @Published var availableUpdate: UpdateManifest?
 
     private var scanTask: Task<Void, Never>?
-    private var scheduledActivity: NSBackgroundActivityScheduler?
 
-    /// Last roots/extensions a scan actually ran with — what a Pro
-    /// scheduled scan re-runs against, since there's no separate
-    /// "scheduled folders" picker to keep in sync with StartView's.
+    /// Last roots/extensions a scan actually ran with — what `rescan()`
+    /// (e.g. after excluding a folder from a result row) re-runs against.
     private var lastScanRoots: [URL] = []
     private var lastScanExtensions: Set<String>?
 
@@ -61,13 +59,6 @@ final class DupeModel: ObservableObject {
         groups.filter { group in
             group.items.allSatisfy { selectedForTrash.contains($0.url) }
         }
-    }
-
-    /// True whenever the user has completed results on screen to review —
-    /// used to defer a Pro scheduled scan rather than silently discarding
-    /// an in-progress manual review (see `configureScheduledScans`).
-    var isReviewingResults: Bool {
-        hasScanned && !groups.isEmpty
     }
 
     func startScan(roots: [URL], extensions: Set<String>? = nil) {
@@ -247,36 +238,4 @@ final class DupeModel: ObservableObject {
         return "\"\(value.replacingOccurrences(of: "\"", with: "\"\""))\""
     }
 
-    // MARK: - Pro: scheduled background scans
-
-    /// Starts, reconfigures, or stops a repeating background scan of the
-    /// last folders/filter a manual scan actually used. Called whenever
-    /// license status or the Settings toggle/interval changes — always
-    /// safe to call with `enabled: false` even if nothing was scheduled.
-    func configureScheduledScans(enabled: Bool, intervalHours: Int) {
-        scheduledActivity?.invalidate()
-        scheduledActivity = nil
-        guard enabled, !lastScanRoots.isEmpty else { return }
-
-        let activity = NSBackgroundActivityScheduler(identifier: "com.rajeshsood.mactwin.scheduledscan")
-        activity.repeats = true
-        activity.interval = TimeInterval(max(1, intervalHours) * 3600)
-        activity.tolerance = activity.interval * 0.1
-        activity.qualityOfService = .utility
-        activity.schedule { [weak self] completion in
-            guard let self else { completion(.finished); return }
-            Task { @MainActor in
-                // Don't clobber an active review session: a scan already
-                // running, or unreviewed results still on screen (the user
-                // may have hand-adjusted selections that `startScan` would
-                // silently discard). Defer rather than run — the next
-                // scheduled tick, or the user's next manual scan, will
-                // catch up once they've moved past ResultsView.
-                guard !self.isScanning, !self.isReviewingResults else { completion(.finished); return }
-                self.startScan(roots: self.lastScanRoots, extensions: self.lastScanExtensions)
-                completion(.finished)
-            }
-        }
-        scheduledActivity = activity
-    }
 }

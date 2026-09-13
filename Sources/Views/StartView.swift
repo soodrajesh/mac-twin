@@ -32,11 +32,14 @@ struct StartView: View {
                     .accessibilityHidden(true)
                 Text("MacTwin")
                     .appFont(.title2, weight: .bold)
-                Text("Finds files with identical content, so you can trash the extra copies. Nothing is scanned outside the folders you pick.")
-                    .appFont(.callout)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: 420)
+                VStack(spacing: 2) {
+                    Text("Finds duplicate files and lets you trash the extras.")
+                        .appFont(.callout, weight: .semibold)
+                    Text("Only scans the folders you pick below.")
+                        .appFont(.callout)
+                        .foregroundStyle(.secondary)
+                }
+                .multilineTextAlignment(.center)
             }
 
             VStack(alignment: .leading, spacing: 8) {
