@@ -45,7 +45,6 @@ deciding what to delete or actually deleting it is ever gated.
 | Scan scope | Downloads, Pictures, Desktop, Documents, Movies | + any custom folder, unlimited |
 | Auto-select strategy | Keep Oldest (default) | + Keep Newest, Keep Shortest Path |
 | Export scan report (CSV) | — | ✅ |
-| Scheduled background scans | — | ✅ |
 | Exclude folders from scans | — | ✅ |
 
 ### MacTwin Pro

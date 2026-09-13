@@ -59,8 +59,9 @@ extension EnvironmentValues {
 
 /// License status: whether the user has a valid MacTwin Pro license.
 /// Free tier (full scan + review + manual trash — the core safety-first
-/// loop) has no expiry and no trial; Pro gates scheduled scans, report
-/// export, smart auto-select, and unlimited custom-folder scan scope. See
+/// loop) has no expiry and no trial; Pro gates report export, smart
+/// auto-select, unlimited custom-folder scan scope, and excluding folders
+/// from scans. See
 /// `MacTwinLicenseCheck.swift`.
 private struct IsProLicensedKey: EnvironmentKey {
     static let defaultValue: Bool = false

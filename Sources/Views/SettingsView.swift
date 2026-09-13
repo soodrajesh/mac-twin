@@ -60,32 +60,6 @@ enum TextSizeSetting: String, CaseIterable, Identifiable {
     }
 }
 
-/// How often a Pro scheduled scan re-runs. Rounded out to include shorter
-/// intervals — the original 3 options (daily and up) were too coarse for
-/// anyone who wants MacTwin catching duplicates within the same day, e.g.
-/// a Downloads folder that fills up constantly.
-enum ScheduledScanInterval: Int, CaseIterable, Identifiable {
-    case hourly = 1
-    case every6Hours = 6
-    case every12Hours = 12
-    case daily = 24
-    case every3Days = 72
-    case weekly = 168
-
-    var id: Int { rawValue }
-
-    var label: String {
-        switch self {
-        case .hourly:      return "Hourly"
-        case .every6Hours: return "Every 6 Hours"
-        case .every12Hours: return "Every 12 Hours"
-        case .daily:       return "Daily"
-        case .every3Days:  return "Every 3 Days"
-        case .weekly:      return "Weekly"
-        }
-    }
-}
-
 /// The app's one Settings pane (⌘,). Template: mac-cleanup's
 /// `SettingsView.swift` — Appearance, Text Size, then app-specific
 /// preferences (Scanning), then License, then About, each its own tab.
@@ -145,8 +119,6 @@ private struct AppearanceTab: View {
 
 private struct ScanningTab: View {
     @Environment(\.isProLicensed) private var isProLicensed
-    @AppStorage("scheduledScansEnabled") private var scheduledScansEnabled = false
-    @AppStorage("scheduledScanIntervalHours") private var scheduledScanIntervalHours = ScheduledScanInterval.daily.rawValue
     /// Mirrors `ExclusionStore.paths` in local `@State` — the store itself
     /// is a plain `UserDefaults` wrapper, not `ObservableObject`, so every
     /// add/remove here re-reads it back into this array to redraw the list.
@@ -224,45 +196,6 @@ private struct ScanningTab: View {
                 }
             }
 
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 6) {
-                    Text("Scheduled Scans")
-                        .appFont(.headline)
-                    ProBadge()
-                }
-                Text("Automatically re-scan your last-used folders in the background, on a repeating schedule, while MacTwin is running.")
-                    .appFont(.callout)
-                    .foregroundStyle(.secondary)
-
-                if isProLicensed {
-                    Toggle("Enable scheduled scans", isOn: $scheduledScansEnabled)
-                        .appFont(.body)
-                    if scheduledScansEnabled {
-                        // A fixed preset list can't match everyone's actual
-                        // routine — this is a real number you can set to
-                        // anything from 1 hour to 30 days, not a
-                        // pick-one-of-six menu. The presets below are just
-                        // one-tap shortcuts onto the same value.
-                        Stepper(value: $scheduledScanIntervalHours, in: 1...720) {
-                            Text("Every \(scheduledScanIntervalHours) hour\(scheduledScanIntervalHours == 1 ? "" : "s")")
-                                .appFont(.body)
-                        }
-                        .frame(maxWidth: 260)
-
-                        HStack(spacing: 6) {
-                            ForEach(ScheduledScanInterval.allCases) { interval in
-                                Button(interval.label) { scheduledScanIntervalHours = interval.rawValue }
-                                    .buttonStyle(.bordered)
-                                    .controlSize(.small)
-                                    .tint(scheduledScanIntervalHours == interval.rawValue ? .accentColor : .secondary)
-                            }
-                        }
-                    }
-                } else {
-                    UnlockProButton(label: "Unlock Pro for Scheduled Scans")
-                }
-            }
-
             Spacer()
         }
         .padding(20)
@@ -277,7 +210,6 @@ private struct LicenseTab: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text("MacTwin Pro unlocks:").appFont(.subheadline, weight: .semibold)
                 ForEach([
-                    "Scheduled background scans",
                     "Export scan reports (CSV)",
                     "Smart auto-select (beyond Keep Oldest)",
                     "Unlimited custom-folder scan scope",
